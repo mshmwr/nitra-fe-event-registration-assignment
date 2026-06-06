@@ -1,0 +1,103 @@
+# PLAN.md — Event Registration Wizard
+
+## How I Planned and Broke Down the Task
+
+After reading both the spec doc and the repo README, I identified four concrete layers of work and sequenced them dependency-first:
+
+1. **State & logic layer** (composables) — the foundation everything else reads from
+2. **Shared UI components** — reusable building blocks each step needs
+3. **Step views** — the four wizard screens
+4. **Wizard shell** — stepper nav, transitions, success screen, and the validation orchestration layer
+
+The spec's four evaluation dimensions (Vue Patterns, Design Fidelity, Code Quality, JS Logic) were mapped to concrete deliverables:
+
+| Criterion | Implementation |
+|-----------|----------------|
+| Vue Patterns | `provide/inject` for cross-step state; `computed` for all derived values; `defineModel`-style reactive binding via `v-model` on state fields |
+| Design Fidelity | Semantic CSS tokens (`text-brand`, `bg-brand-muted-rest`, etc.) throughout; no hardcoded hex |
+| Code Quality | JSDoc on all non-obvious functions; one composable per concern; `src/components/steps/` separate from shared components |
+| JS Logic | Proper half-open interval overlap check for conflicts; floating-point-safe pricing with `Math.round(...*100)/100` |
+
+---
+
+## Key Decisions
+
+### Cross-step state: `provide/inject` composable
+
+Rather than Pinia or Vuex, I used a single `provideRegistration()` called at the wizard root, exposing a `reactive()` object via `provide`. Steps call `useRegistration()` to inject it. This keeps the state local to the wizard (not global store), is idiomatic Vue 3, and matches the evaluation rubric's preference for composables over centralized store plugins.
+
+### Validation: deferred + unified
+
+All field validation runs only after the first submit attempt (`validationTriggered` flag). Before that, no red borders appear — this avoids "screaming at the user before they've had a chance to fill anything." On submit, `useValidation` computes per-step error maps; the `stepHasErrors` computed shows error indicators on the stepper nav. Users can click directly on a flagged step to jump back and fix it.
+
+### Time conflict detection: `hasTimeOverlap(s1, e1, s2, e2)`
+
+Half-open interval overlap: `start1 < end2 && start2 < end1`. This correctly handles:
+- Exactly touching intervals (e.g. 10:00–11:00 and 11:00–12:00) → not a conflict
+- Partial overlaps in both directions
+- One session fully inside another
+
+Sessions are allowed to be selected even when conflicting; the error only blocks submission, matching the spec's "users may freely select, conflicts flagged at Step 4" requirement.
+
+### Workshop conflict vs. session conflict
+
+Two separate concepts:
+- **Session–session conflicts**: shown with a warning badge on SessionCard; blocks submission
+- **Workshop–session conflicts**: shown on AddonItem; the workshop is marked unavailable (disabled) since there's no recovery path for a paid workshop that overlaps a free session you've already chosen
+
+### Pricing: computed, not watched
+
+`usePricing` is a pure composable that derives the order total from the current state via `computed`. No `watch` calls, no manual sync — the total is always correct and updates reactively. VIP discount is applied per-line-item inside the computed, not as a post-processing step.
+
+---
+
+## Additional Dependencies
+
+None added. The starter repo (`Quasar 2.18.5`, `Vue 3.5.17`, `UnoCSS`) provides everything needed:
+
+- Date formatting: native `Intl.DateTimeFormat` (no date-fns needed)
+- Transitions: Vue `<Transition>` built-in
+- Form components: Quasar's `q-input`, `q-btn`
+
+I deliberately avoided adding lodash or similar to keep the bundle minimal and because the data transformations required (groupBy, sort) are straightforward one-liners with native JS.
+
+---
+
+## How I Used AI Tools
+
+This project was developed with Claude Code (Claude Sonnet 4.6) as the primary AI collaborator.
+
+**What worked well:**
+- Generating the composable skeletons with correct Vue 3 reactivity patterns (avoiding stale ref pitfalls)
+- Writing JSDoc annotations and consistent naming conventions
+- Catching edge cases like the floating-point precision issue in VIP discount pricing (`0.9 * 149 = 134.1` but `Math.round(0.9 * 149 * 100) / 100 = 134.1` is fine; the guard matters for larger prices)
+
+**Where I reviewed and corrected AI output:**
+- Initial draft of `useConflicts` didn't handle the "touching but not overlapping" edge case correctly — I revised the overlap function to use strict `<` not `<=`
+- The `AddonItem` component initially had the size selector outside the `v-if="isSelected"` guard, meaning size buttons appeared even for unselected items — caught and fixed before shipping
+
+**Prompts that were particularly effective:**
+- "Write a Vue 3 composable using provide/inject for cross-step wizard state, with a reactive object rather than individual refs" — produced clean, idiomatic code on first try
+- "Implement time overlap detection as a pure function that handles touching intervals correctly" — immediately produced the correct `s1 < e2 && s2 < e1` form
+
+---
+
+## Challenges Encountered
+
+**UnoCSS + Quasar in a Vite worktree:** The worktree didn't have `node_modules` (git worktrees don't copy them). Solved by symlinking the main repo's `node_modules` into the worktree.
+
+**Headless screenshot font loading:** Material Icons font doesn't load in headless Chromium during CI screenshots, so icon ligatures render as text ("check", "arrow_back"). This is a test environment artifact — the font loads normally in a real browser.
+
+---
+
+## What I Would Improve Given More Time
+
+1. **i18n support** — Extract all user-facing strings into a `messages/en.js` file and wire up `vue-i18n`. The composables and components are already structured with clear string boundaries.
+
+2. **Responsive mobile design** — The current layout uses `md:grid-cols-3` for ticket cards and `lg:flex-row` for the add-ons sidebar. On mobile (< 768px) the sidebar stacks below; the ticket cards stack to single column. This is functional but not fully polished — the OrderSummary on mobile could be a collapsible drawer.
+
+3. **Persist state to localStorage** — A `useRegistration` enhancement: watch the state and debounce-save to `localStorage` under a session key. On page reload, hydrate from it. Prevents data loss on accidental refresh.
+
+4. **Animated step counter** — The connector lines between steps could fill in with a green animation as steps complete, giving a stronger "progress" feel.
+
+5. **Keyboard navigation audit** — The custom ticket cards and session cards use `role="radio"` / `role="checkbox"` with `keydown.enter.space` handlers, but a full ARIA review (focus management across step transitions, focus trap review) would be needed for production.
