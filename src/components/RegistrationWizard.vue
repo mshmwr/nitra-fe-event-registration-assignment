@@ -88,7 +88,7 @@ function stepStatus(n) {
             <!-- Step indicator -->
             <button
               type="button"
-              class="flex items-center gap-2 py-2 px-3 rounded-lg transition-colors group focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2"
+              class="flex items-center gap-2 py-2 px-2 sm:px-3 rounded-lg transition-colors group min-w-0 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2"
               :class="{
                 'cursor-pointer': step.number < currentStep || stepStatus(step.number) === 'done' || stepStatus(step.number) === 'error',
                 'cursor-default': step.number > currentStep && stepStatus(step.number) !== 'done' && stepStatus(step.number) !== 'error',
@@ -110,8 +110,9 @@ function stepStatus(n) {
                 <span v-else>{{ step.number }}</span>
               </div>
               <span
-                class="text-sm font-medium hidden sm:block transition-colors"
+                class="text-sm font-medium transition-colors truncate"
                 :class="{
+                  'hidden sm:block': step.number !== currentStep,
                   'text-neutral': stepStatus(step.number) === 'active',
                   'text-success': stepStatus(step.number) === 'done',
                   'text-danger': stepStatus(step.number) === 'error',

@@ -161,14 +161,14 @@ function formatDate(iso) {
           <li
             v-for="item in addonLineItems"
             :key="item.id"
-            class="flex justify-between items-baseline text-sm"
+            class="flex justify-between items-baseline gap-2 text-sm"
           >
-            <span class="text-neutral">
+            <span class="text-neutral min-w-0">
               {{ item.name }}
               <span v-if="item.size" class="text-neutral-muted text-xs">({{ item.size }})</span>
               <span v-if="item.quantity > 1" class="text-neutral-muted text-xs"> × {{ item.quantity }}</span>
             </span>
-            <span class="text-neutral font-medium">{{ formatPrice(item.subtotal) }}</span>
+            <span class="text-neutral font-medium flex-shrink-0 whitespace-nowrap">{{ formatPrice(item.subtotal) }}</span>
           </li>
         </ul>
       </div>
@@ -187,10 +187,10 @@ function formatDate(iso) {
         <div
           v-for="item in addonLineItems"
           :key="item.id"
-          class="flex justify-between text-sm"
+          class="flex justify-between gap-2 text-sm"
         >
-          <span class="text-neutral-muted">{{ item.name }}<span v-if="item.quantity > 1"> × {{ item.quantity }}</span></span>
-          <span class="text-neutral">{{ formatPrice(item.subtotal) }}</span>
+          <span class="text-neutral-muted min-w-0">{{ item.name }}<span v-if="item.quantity > 1"> × {{ item.quantity }}</span></span>
+          <span class="text-neutral flex-shrink-0 whitespace-nowrap">{{ formatPrice(item.subtotal) }}</span>
         </div>
         <div class="border-t divider-default pt-2 flex justify-between font-medium">
           <span class="text-neutral">Total</span>
