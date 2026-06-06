@@ -1,4 +1,6 @@
 <script setup>
+import { computed } from 'vue'
+
 const props = defineProps({
   session: { type: Object, required: true },
   selected: { type: Boolean, default: false },
@@ -7,8 +9,8 @@ const props = defineProps({
 
 const emit = defineEmits(['toggle'])
 
-const isFull = props.session.registered >= props.session.capacity
-const remaining = props.session.capacity - props.session.registered
+const isFull = computed(() => props.session.registered >= props.session.capacity)
+const remaining = computed(() => props.session.capacity - props.session.registered)
 
 const TRACK_COLORS = {
   main: 'bg-brand-muted-rest text-brand',

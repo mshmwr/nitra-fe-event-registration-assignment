@@ -1,5 +1,7 @@
-import { computed } from 'vue'
+import { computed, provide, inject } from 'vue'
 import { addons } from 'src/mocks/addons.js'
+
+export const PRICING_KEY = Symbol('pricing')
 
 export const TICKET_PRICES = { general: 299, vip: 599, student: 99 }
 
@@ -19,6 +21,20 @@ export const TICKET_INFO = {
     price: 99,
     perks: ['All sessions & keynotes'],
   },
+}
+
+/**
+ * Effective unit price for an addon: applies VIP 10% discount to workshops.
+ * Single source of truth — used by both AddonItem display and usePricing calculations.
+ * @param {Object} addon
+ * @param {boolean} isVip
+ * @returns {number}
+ */
+export function workshopUnitPrice(addon, isVip) {
+  if (addon.category === 'workshop' && isVip) {
+    return Math.round(addon.price * 0.9 * 100) / 100
+  }
+  return addon.price
 }
 
 /**
@@ -46,10 +62,7 @@ export function usePricing(ticketTypeRef, selectedAddonsRef) {
     Object.entries(selectedAddonsRef.value).flatMap(([id, selection]) => {
       const addon = addons.find(a => a.id === id)
       if (!addon) return []
-      let unitPrice = addon.price
-      if (addon.category === 'workshop' && ticketTypeRef.value === 'vip') {
-        unitPrice = Math.round(unitPrice * 0.9 * 100) / 100
-      }
+      const unitPrice = workshopUnitPrice(addon, ticketTypeRef.value === 'vip')
       const quantity = selection.quantity ?? 1
       return [{
         id,
@@ -72,4 +85,25 @@ export function usePricing(ticketTypeRef, selectedAddonsRef) {
   )
 
   return { ticketPrice, addonLineItems, addonsTotal, total }
+}
+
+/**
+ * Call once in the wizard root to compute pricing and share it downward via provide/inject.
+ * @param {import('vue').Ref<string>} ticketTypeRef
+ * @param {import('vue').Ref<Record<string, { quantity: number, size: string|null }>>} selectedAddonsRef
+ */
+export function providePricing(ticketTypeRef, selectedAddonsRef) {
+  const pricing = usePricing(ticketTypeRef, selectedAddonsRef)
+  provide(PRICING_KEY, pricing)
+  return pricing
+}
+
+/**
+ * Inject the pricing computed refs provided by the wizard root.
+ * Must be used inside a component descended from RegistrationWizard.
+ */
+export function usePricingInjected() {
+  const pricing = inject(PRICING_KEY)
+  if (!pricing) throw new Error('usePricingInjected must be used within a component that calls providePricing()')
+  return pricing
 }

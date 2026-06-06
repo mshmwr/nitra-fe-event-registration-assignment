@@ -1,8 +1,9 @@
 <script setup>
-import { computed, ref } from 'vue'
+import { computed } from 'vue'
 import { provideRegistration } from 'src/composables/useRegistration.js'
 import { useConflicts } from 'src/composables/useConflicts.js'
 import { useValidation } from 'src/composables/useValidation.js'
+import { providePricing } from 'src/composables/usePricing.js'
 import StepAttendeeInfo from 'src/components/steps/StepAttendeeInfo.vue'
 import StepSessionSelection from 'src/components/steps/StepSessionSelection.vue'
 import StepAddons from 'src/components/steps/StepAddons.vue'
@@ -12,7 +13,11 @@ const state = provideRegistration()
 
 const selectedSessionIdsRef = computed(() => state.selectedSessionIds)
 const { conflictingSessionIds } = useConflicts(selectedSessionIdsRef)
-const { step1Errors, step2Errors, stepHasErrors, isValid } = useValidation(state, conflictingSessionIds)
+const { step1Errors, step2Errors, step3Errors, stepHasErrors, isValid, hasMerchandise } = useValidation(state, conflictingSessionIds)
+
+const ticketTypeRef = computed(() => state.ticketType)
+const selectedAddonsRef = computed(() => state.selectedAddons)
+providePricing(ticketTypeRef, selectedAddonsRef)
 
 const STEPS = [
   { number: 1, label: 'Attendee Info', icon: 'person' },
@@ -21,10 +26,7 @@ const STEPS = [
   { number: 4, label: 'Review & Submit', icon: 'check_circle' },
 ]
 
-const currentStep = computed({
-  get: () => state.currentStep,
-  set: (v) => { state.currentStep = v },
-})
+const currentStep = computed(() => state.currentStep)
 
 /** Validation errors shown only after first submit attempt */
 const showErrors = computed(() => state.validationTriggered)
@@ -88,11 +90,11 @@ function stepStatus(n) {
               type="button"
               class="flex items-center gap-2 py-2 px-3 rounded-lg transition-colors group focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2"
               :class="{
-                'cursor-pointer': step.number <= currentStep || stepStatus(step.number) === 'done',
-                'cursor-default': step.number > currentStep && stepStatus(step.number) !== 'done',
+                'cursor-pointer': step.number < currentStep || stepStatus(step.number) === 'done' || stepStatus(step.number) === 'error',
+                'cursor-default': step.number > currentStep && stepStatus(step.number) !== 'done' && stepStatus(step.number) !== 'error',
               }"
               :aria-current="step.number === currentStep ? 'step' : undefined"
-              @click="(step.number < currentStep || stepStatus(step.number) === 'done') && goTo(step.number)"
+              @click="(step.number < currentStep || stepStatus(step.number) === 'done' || stepStatus(step.number) === 'error') && goTo(step.number)"
             >
               <div
                 class="w-7 h-7 rounded-full flex items-center justify-center text-sm font-medium flex-shrink-0 transition-colors"
@@ -147,6 +149,9 @@ function stepStatus(n) {
             <StepAddons
               v-else-if="currentStep === 3"
               :key="3"
+              :has-merchandise="hasMerchandise"
+              :step3-errors="step3Errors"
+              :show-errors="showErrors"
             />
             <StepReviewSubmit
               v-else-if="currentStep === 4"

@@ -18,12 +18,17 @@ export function hasTimeOverlap(s1, e1, s2, e2) {
  * @param {import('vue').Ref<string[]>} selectedSessionIds
  */
 export function useConflicts(selectedSessionIds) {
+  /** Cached list of selected session objects, shared across conflict checks. */
+  const selectedSessions = computed(() =>
+    sessions.filter(s => selectedSessionIds.value.includes(s.id))
+  )
+
   /**
    * Set of session IDs that conflict with at least one other selected session.
    * @type {import('vue').ComputedRef<Set<string>>}
    */
   const conflictingSessionIds = computed(() => {
-    const selected = sessions.filter(s => selectedSessionIds.value.includes(s.id))
+    const selected = selectedSessions.value
     const conflicts = new Set()
     for (let i = 0; i < selected.length; i++) {
       for (let j = i + 1; j < selected.length; j++) {
@@ -44,8 +49,7 @@ export function useConflicts(selectedSessionIds) {
    * @returns {boolean}
    */
   function workshopConflictsWithSessions(workshop) {
-    const selected = sessions.filter(s => selectedSessionIds.value.includes(s.id))
-    return selected.some(s => hasTimeOverlap(s.date, s.endDate, workshop.date, workshop.endDate))
+    return selectedSessions.value.some(s => hasTimeOverlap(s.date, s.endDate, workshop.date, workshop.endDate))
   }
 
   return { conflictingSessionIds, workshopConflictsWithSessions }

@@ -1,14 +1,10 @@
 <script setup>
 import { computed } from 'vue'
 import { useRegistration } from 'src/composables/useRegistration.js'
-import { usePricing, TICKET_INFO, formatPrice } from 'src/composables/usePricing.js'
+import { usePricingInjected, TICKET_INFO, formatPrice } from 'src/composables/usePricing.js'
 
 const state = useRegistration()
-
-const ticketTypeRef = computed(() => state.ticketType)
-const selectedAddonsRef = computed(() => state.selectedAddons)
-
-const { ticketPrice, addonLineItems, addonsTotal, total } = usePricing(ticketTypeRef, selectedAddonsRef)
+const { ticketPrice, addonLineItems, addonsTotal, total } = usePricingInjected()
 
 const ticketLabel = computed(() => TICKET_INFO[state.ticketType]?.label ?? state.ticketType)
 </script>

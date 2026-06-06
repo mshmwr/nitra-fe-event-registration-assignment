@@ -1,7 +1,7 @@
 <script setup>
 import { computed } from 'vue'
 import { useRegistration } from 'src/composables/useRegistration.js'
-import { usePricing, TICKET_INFO, formatPrice } from 'src/composables/usePricing.js'
+import { usePricingInjected, TICKET_INFO, formatPrice } from 'src/composables/usePricing.js'
 import { sessions } from 'src/mocks/sessions.js'
 import { addons } from 'src/mocks/addons.js'
 
@@ -13,10 +13,7 @@ const props = defineProps({
 const emit = defineEmits(['goto-step', 'submit'])
 
 const state = useRegistration()
-
-const ticketTypeRef = computed(() => state.ticketType)
-const selectedAddonsRef = computed(() => state.selectedAddons)
-const { ticketPrice, addonLineItems, addonsTotal, total } = usePricing(ticketTypeRef, selectedAddonsRef)
+const { ticketPrice, addonLineItems, addonsTotal, total } = usePricingInjected()
 
 const ticketLabel = computed(() => TICKET_INFO[state.ticketType]?.label ?? state.ticketType)
 
@@ -43,7 +40,7 @@ function formatDate(iso) {
 
     <!-- Validation error summary -->
     <div
-      v-if="showErrors && (stepHasErrors[1] || stepHasErrors[2])"
+      v-if="showErrors && (stepHasErrors[1] || stepHasErrors[2] || stepHasErrors[3])"
       class="p-4 rounded-lg bg-danger-muted-rest border border-danger-muted space-y-2"
     >
       <div class="flex items-center gap-2 text-danger font-medium text-sm">
@@ -59,6 +56,11 @@ function formatDate(iso) {
         <li v-if="stepHasErrors[2]" class="text-sm text-danger">
           <button type="button" class="underline hover:no-underline" @click="emit('goto-step', 2)">
             Step 2 — Session conflicts detected
+          </button>
+        </li>
+        <li v-if="stepHasErrors[3]" class="text-sm text-danger">
+          <button type="button" class="underline hover:no-underline" @click="emit('goto-step', 3)">
+            Step 3 — Shipping address required for merchandise
           </button>
         </li>
       </ul>
@@ -141,7 +143,10 @@ function formatDate(iso) {
     <!-- Step 3: Add-ons -->
     <section class="rounded-xl border border-neutral-muted bg-surface-l1 overflow-hidden">
       <div class="flex items-center justify-between px-5 py-3 bg-surface-l2 border-b divider-default">
-        <h3 class="text-subtitle2 text-neutral">Add-ons ({{ addonLineItems.length }})</h3>
+        <h3 class="text-subtitle2 text-neutral flex items-center gap-2">
+          <span v-if="stepHasErrors[3] && showErrors" class="material-icons text-danger text-base">error</span>
+          Add-ons ({{ addonLineItems.length }})
+        </h3>
         <button type="button" class="text-sm text-brand hover:text-brand-emphasis" @click="emit('goto-step', 3)">
           Edit
         </button>

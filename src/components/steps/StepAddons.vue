@@ -6,18 +6,17 @@ import { addons } from 'src/mocks/addons.js'
 import AddonItem from 'src/components/AddonItem.vue'
 import OrderSummary from 'src/components/OrderSummary.vue'
 
+const props = defineProps({
+  hasMerchandise: { type: Boolean, default: false },
+  step3Errors: { type: Object, default: () => ({}) },
+  showErrors: { type: Boolean, default: false },
+})
+
 const state = useRegistration()
 const selectedSessionIdsRef = computed(() => state.selectedSessionIds)
 const { workshopConflictsWithSessions } = useConflicts(selectedSessionIdsRef)
 
 const isVip = computed(() => state.ticketType === 'vip')
-
-const hasMerchandise = computed(() =>
-  Object.keys(state.selectedAddons).some(id => {
-    const addon = addons.find(a => a.id === id)
-    return addon?.category === 'merchandise'
-  })
-)
 
 const categories = [
   { key: 'workshop', label: 'Workshops' },
@@ -57,7 +56,16 @@ function handleAddonUpdate(id, selection) {
           <p class="text-sm text-neutral-muted">Enhance your conference experience with workshops, meals, and merchandise.</p>
         </div>
 
-        <!-- Merchandise shipping banner -->
+        <!-- Shipping address validation error (shown after submit attempt) -->
+        <div
+          v-if="showErrors && step3Errors.shippingAddress"
+          class="flex items-start gap-3 p-3 rounded-lg bg-danger-muted-rest border border-danger-muted text-danger text-sm"
+        >
+          <span class="material-icons text-base flex-shrink-0 mt-0.5">error_outline</span>
+          {{ step3Errors.shippingAddress }}
+        </div>
+
+        <!-- Merchandise shipping banner (informational) -->
         <div
           v-if="hasMerchandise"
           class="flex items-start gap-3 p-3 rounded-lg bg-info-muted-rest border border-info-muted text-info text-sm"

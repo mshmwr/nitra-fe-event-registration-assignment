@@ -1,6 +1,6 @@
 <script setup>
 import { computed } from 'vue'
-import { formatPrice } from 'src/composables/usePricing.js'
+import { workshopUnitPrice, formatPrice } from 'src/composables/usePricing.js'
 
 const props = defineProps({
   addon: { type: Object, required: true },
@@ -17,12 +17,7 @@ const isSelected = computed(() => props.selection !== null)
 const isFull = computed(() => props.addon.capacity != null && props.addon.registered >= props.addon.capacity)
 const isDisabled = computed(() => isFull.value || props.conflictsWithSession)
 
-const effectivePrice = computed(() => {
-  if (props.addon.category === 'workshop' && props.isVip) {
-    return Math.round(props.addon.price * 0.9 * 100) / 100
-  }
-  return props.addon.price
-})
+const effectivePrice = computed(() => workshopUnitPrice(props.addon, props.isVip))
 
 const remaining = computed(() => {
   if (props.addon.capacity == null) return null
