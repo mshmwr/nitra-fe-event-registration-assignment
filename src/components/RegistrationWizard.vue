@@ -1,5 +1,6 @@
 <script setup>
 import { computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { provideRegistration } from 'src/composables/useRegistration.js'
 import { useConflicts } from 'src/composables/useConflicts.js'
 import { useValidation } from 'src/composables/useValidation.js'
@@ -8,6 +9,8 @@ import StepAttendeeInfo from 'src/components/steps/StepAttendeeInfo.vue'
 import StepSessionSelection from 'src/components/steps/StepSessionSelection.vue'
 import StepAddons from 'src/components/steps/StepAddons.vue'
 import StepReviewSubmit from 'src/components/steps/StepReviewSubmit.vue'
+
+const { t } = useI18n()
 
 const state = provideRegistration()
 
@@ -20,10 +23,10 @@ const ticketTypeRef = computed(() => state.ticketType)
 providePricing(ticketTypeRef, selectedAddonsRef)
 
 const STEPS = [
-  { number: 1, label: 'Attendee Info', icon: 'person' },
-  { number: 2, label: 'Sessions', icon: 'event' },
-  { number: 3, label: 'Add-ons', icon: 'shopping_cart' },
-  { number: 4, label: 'Review & Submit', icon: 'check_circle' },
+  { number: 1, labelKey: 'nav.steps.attendee', icon: 'person' },
+  { number: 2, labelKey: 'nav.steps.sessions', icon: 'event' },
+  { number: 3, labelKey: 'nav.steps.addons', icon: 'shopping_cart' },
+  { number: 4, labelKey: 'nav.steps.review', icon: 'check_circle' },
 ]
 
 const currentStep = computed(() => state.currentStep)
@@ -72,18 +75,18 @@ function stepStatus(n) {
         <div class="w-16 h-16 rounded-full bg-success-muted-rest flex items-center justify-center">
           <span class="material-icons text-success text-4xl">check_circle</span>
         </div>
-        <h2 class="text-h3 text-neutral">You're registered!</h2>
-        <p class="text-neutral-muted max-w-md">
-          Thanks, <strong>{{ state.attendee.name }}</strong>! Your registration for
-          <strong>WebDev Summit 2028</strong> has been submitted. A confirmation will be sent to
-          <strong>{{ state.attendee.email }}</strong>.
-        </p>
+        <h2 class="text-h3 text-neutral">{{ t('success.title') }}</h2>
+        <i18n-t keypath="success.message" tag="p" class="text-neutral-muted max-w-md" scope="global">
+          <template #name><strong>{{ state.attendee.name }}</strong></template>
+          <template #event><strong>{{ t('app.title') }}</strong></template>
+          <template #email><strong>{{ state.attendee.email }}</strong></template>
+        </i18n-t>
       </div>
 
       <!-- Wizard -->
       <div v-else class="space-y-6">
         <!-- Step header -->
-        <nav class="flex items-center gap-0" aria-label="Registration steps">
+        <nav class="flex items-center gap-0" :aria-label="t('nav.ariaSteps')">
           <template v-for="(step, idx) in STEPS" :key="step.number">
             <!-- Step indicator -->
             <button
@@ -119,7 +122,7 @@ function stepStatus(n) {
                   'text-neutral-quiet': stepStatus(step.number) === 'pending',
                 }"
               >
-                {{ step.label }}
+                {{ t(step.labelKey) }}
               </span>
             </button>
 
@@ -171,7 +174,7 @@ function stepStatus(n) {
           <q-btn
             v-if="currentStep > 1"
             flat
-            label="Back"
+            :label="t('nav.back')"
             icon="arrow_back"
             color="primary"
             @click="back"
@@ -180,7 +183,7 @@ function stepStatus(n) {
 
           <q-btn
             v-if="currentStep < 4"
-            label="Continue"
+            :label="t('nav.continue')"
             icon-right="arrow_forward"
             color="primary"
             unelevated

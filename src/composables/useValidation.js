@@ -1,4 +1,5 @@
 import { computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { addons } from 'src/mocks/addons.js'
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
@@ -12,6 +13,8 @@ const PHONE_RE = /^\+?(?=.*\d)[\d\s\-().]{7,20}$/
  * @param {import('vue').ComputedRef<Set<string>>} [conflictingWorkshopIds] - selected workshops overlapping a session
  */
 export function useValidation(state, conflictingSessionIds, conflictingWorkshopIds = null) {
+  const { t } = useI18n()
+
   const hasMerchandise = computed(() =>
     Object.keys(state.selectedAddons).some(id => {
       const addon = addons.find(a => a.id === id)
@@ -22,15 +25,15 @@ export function useValidation(state, conflictingSessionIds, conflictingWorkshopI
   /** @type {import('vue').ComputedRef<Record<string, string>>} */
   const step1Errors = computed(() => {
     const errs = {}
-    if (!state.attendee.name.trim()) errs.name = 'Full name is required'
-    if (!state.attendee.email.trim()) errs.email = 'Email is required'
-    else if (!EMAIL_RE.test(state.attendee.email)) errs.email = 'Invalid email format'
-    if (!state.attendee.phone.trim()) errs.phone = 'Phone is required'
-    else if (!PHONE_RE.test(state.attendee.phone)) errs.phone = 'Invalid phone format'
-    if (!state.attendee.company.trim()) errs.company = 'Company is required'
-    if (!state.attendee.jobTitle.trim()) errs.jobTitle = 'Job title is required'
+    if (!state.attendee.name.trim()) errs.name = t('validation.nameRequired')
+    if (!state.attendee.email.trim()) errs.email = t('validation.emailRequired')
+    else if (!EMAIL_RE.test(state.attendee.email)) errs.email = t('validation.emailInvalid')
+    if (!state.attendee.phone.trim()) errs.phone = t('validation.phoneRequired')
+    else if (!PHONE_RE.test(state.attendee.phone)) errs.phone = t('validation.phoneInvalid')
+    if (!state.attendee.company.trim()) errs.company = t('validation.companyRequired')
+    if (!state.attendee.jobTitle.trim()) errs.jobTitle = t('validation.jobTitleRequired')
     if (hasMerchandise.value && !state.attendee.shippingAddress.trim()) {
-      errs.shippingAddress = 'Shipping address is required when merchandise is selected'
+      errs.shippingAddress = t('validation.shippingRequiredStep1')
     }
     return errs
   })
@@ -39,7 +42,7 @@ export function useValidation(state, conflictingSessionIds, conflictingWorkshopI
   const step2Errors = computed(() => {
     const errs = {}
     if (conflictingSessionIds.value.size > 0) {
-      errs.conflicts = 'You have sessions with time conflicts. Please resolve them before submitting.'
+      errs.conflicts = t('validation.sessionConflicts')
     }
     return errs
   })
@@ -52,10 +55,10 @@ export function useValidation(state, conflictingSessionIds, conflictingWorkshopI
   const step3Errors = computed(() => {
     const errs = {}
     if (hasMerchandise.value && !state.attendee.shippingAddress.trim()) {
-      errs.shippingAddress = 'Shipping address is required. Please fill it in Step 1.'
+      errs.shippingAddress = t('validation.shippingRequiredStep3')
     }
     if (conflictingWorkshopIds && conflictingWorkshopIds.value.size > 0) {
-      errs.workshopConflicts = 'One or more selected workshops conflict with your chosen sessions. Please remove them.'
+      errs.workshopConflicts = t('validation.workshopConflicts')
     }
     return errs
   })

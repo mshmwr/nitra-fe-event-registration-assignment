@@ -1,5 +1,7 @@
 <script setup>
-import { TICKET_INFO, formatPrice } from 'src/composables/usePricing.js'
+import { computed } from 'vue'
+import { useI18n } from 'vue-i18n'
+import { TICKET_PRICES, formatPrice } from 'src/composables/usePricing.js'
 
 const props = defineProps({
   type: { type: String, required: true },
@@ -8,7 +10,11 @@ const props = defineProps({
 
 const emit = defineEmits(['select'])
 
-const info = TICKET_INFO[props.type]
+const { t, tm } = useI18n()
+
+const label = computed(() => t(`tickets.${props.type}.label`))
+const price = computed(() => TICKET_PRICES[props.type] ?? 0)
+const perks = computed(() => tm(`tickets.${props.type}.perks`))
 </script>
 
 <template>
@@ -25,8 +31,8 @@ const info = TICKET_INFO[props.type]
   >
     <div class="flex items-start justify-between gap-2 mb-3">
       <div>
-        <p class="text-subtitle1 text-neutral">{{ info.label }}</p>
-        <p class="text-h3 text-brand mt-0.5">{{ formatPrice(info.price) }}</p>
+        <p class="text-subtitle1 text-neutral">{{ label }}</p>
+        <p class="text-h3 text-brand mt-0.5">{{ formatPrice(price) }}</p>
       </div>
       <div
         class="w-5 h-5 rounded-full border-2 flex-shrink-0 mt-1 flex items-center justify-center transition-colors"
@@ -37,8 +43,8 @@ const info = TICKET_INFO[props.type]
     </div>
     <ul class="space-y-1">
       <li
-        v-for="perk in info.perks"
-        :key="perk"
+        v-for="(perk, idx) in perks"
+        :key="idx"
         class="flex items-center gap-2 text-sm text-neutral-muted"
       >
         <span class="material-icons text-success text-base">check</span>

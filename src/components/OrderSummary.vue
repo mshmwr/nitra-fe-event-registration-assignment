@@ -1,21 +1,24 @@
 <script setup>
 import { computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useRegistration } from 'src/composables/useRegistration.js'
-import { usePricingInjected, TICKET_INFO, formatPrice } from 'src/composables/usePricing.js'
+import { usePricingInjected, formatPrice } from 'src/composables/usePricing.js'
+
+const { t } = useI18n()
 
 const state = useRegistration()
 const { ticketPrice, addonLineItems, addonsTotal, total } = usePricingInjected()
 
-const ticketLabel = computed(() => TICKET_INFO[state.ticketType]?.label ?? state.ticketType)
+const ticketLabel = computed(() => t(`tickets.${state.ticketType}.label`))
 </script>
 
 <template>
   <div class="order-summary rounded-xl border border-neutral-muted bg-surface-l1 p-5 sticky top-4">
-    <h3 class="text-subtitle1 text-neutral mb-4">Order Summary</h3>
+    <h3 class="text-subtitle1 text-neutral mb-4">{{ t('orderSummary.title') }}</h3>
 
     <!-- Ticket -->
     <div class="flex justify-between items-center py-2 border-b divider-muted">
-      <span class="text-sm text-neutral">{{ ticketLabel }} Ticket</span>
+      <span class="text-sm text-neutral">{{ t('orderSummary.ticketLine', { label: ticketLabel }) }}</span>
       <span class="text-sm font-medium text-neutral">{{ formatPrice(ticketPrice) }}</span>
     </div>
 
@@ -27,7 +30,7 @@ const ticketLabel = computed(() => TICKET_INFO[state.ticketType]?.label ?? state
     >
       <div class="flex-1 min-w-0">
         <p class="text-sm text-neutral truncate">{{ item.name }}</p>
-        <p v-if="item.size" class="text-xs text-neutral-quiet">Size: {{ item.size }}</p>
+        <p v-if="item.size" class="text-xs text-neutral-quiet">{{ t('orderSummary.size', { size: item.size }) }}</p>
         <p v-if="item.quantity > 1" class="text-xs text-neutral-quiet">× {{ item.quantity }}</p>
       </div>
       <span class="text-sm font-medium text-neutral flex-shrink-0">{{ formatPrice(item.subtotal) }}</span>
@@ -38,18 +41,18 @@ const ticketLabel = computed(() => TICKET_INFO[state.ticketType]?.label ?? state
       v-if="addonLineItems.length === 0"
       class="text-sm text-neutral-quiet py-2 border-b divider-muted"
     >
-      No add-ons selected
+      {{ t('orderSummary.noAddons') }}
     </p>
 
     <!-- Total -->
     <div class="flex justify-between items-center pt-3 mt-1">
-      <span class="text-subtitle2 text-neutral">Total</span>
+      <span class="text-subtitle2 text-neutral">{{ t('orderSummary.total') }}</span>
       <span class="text-subtitle1 text-brand">{{ formatPrice(total) }}</span>
     </div>
 
     <p v-if="state.ticketType === 'vip' && addonLineItems.some(i => i.category === 'workshop')" class="mt-2 text-xs text-accent flex items-center gap-1">
       <span class="material-icons text-sm">local_offer</span>
-      VIP discount (10%) applied to workshops
+      {{ t('orderSummary.vipNote') }}
     </p>
   </div>
 </template>

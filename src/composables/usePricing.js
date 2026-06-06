@@ -3,25 +3,11 @@ import { addons } from 'src/mocks/addons.js'
 
 export const PRICING_KEY = Symbol('pricing')
 
+// Numeric prices only. Display label/perks live in i18n message files (tickets.*).
 export const TICKET_PRICES = { general: 299, vip: 599, student: 99 }
 
-export const TICKET_INFO = {
-  general: {
-    label: 'General',
-    price: 299,
-    perks: ['All sessions & keynotes', 'Conference lunch'],
-  },
-  vip: {
-    label: 'VIP',
-    price: 599,
-    perks: ['All General perks', 'VIP lounge access', 'Speaker meet & greet', '10% off workshops'],
-  },
-  student: {
-    label: 'Student',
-    price: 99,
-    perks: ['All sessions & keynotes'],
-  },
-}
+// Ticket tier order for rendering the selection cards.
+export const TICKET_TYPES = ['general', 'vip', 'student']
 
 /**
  * Effective unit price for an addon: applies VIP 10% discount to workshops.

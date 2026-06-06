@@ -53,13 +53,22 @@ Two separate concepts:
 
 ## Additional Dependencies
 
-None added. The starter repo (`Quasar 2.18.5`, `Vue 3.5.17`, `UnoCSS`) provides everything needed:
+**`vue-i18n` (^11.4.5)** — added for the i18n "nice to have". Rationale: it is the official, framework-standard internationalization library for Vue 3, integrates via a Quasar boot file, and supports the two features this wizard needs (named-argument interpolation for messages like `{count} spots left`, and ICU-style pluralization). Writing a hand-rolled message lookup would have re-implemented a subset of it with worse pluralization handling. Configured in Composition API mode (`legacy: false`) so `useI18n()` works inside `<script setup>` and composables; the chosen locale persists to `localStorage`.
 
-- Date formatting: native `Intl.DateTimeFormat` (no date-fns needed)
+No other runtime dependencies added. The starter repo (`Quasar 2.18.5`, `Vue 3.5.17`, `UnoCSS`) covers the rest:
+
+- Date/time formatting: native `Intl.DateTimeFormat`, fed the active locale so dates localize alongside text (no date-fns needed)
 - Transitions: Vue `<Transition>` built-in
-- Form components: Quasar's `q-input`, `q-btn`
+- Form components: Quasar's `q-input`, `q-btn`, `q-select` (language switcher)
 
 I deliberately avoided adding lodash or similar to keep the bundle minimal and because the data transformations required (groupBy, sort) are straightforward one-liners with native JS.
+
+### i18n architecture
+
+- `src/i18n/{en,zh-TW}.js` — message trees (mirrored keys); `src/i18n/index.js` exports `SUPPORTED_LOCALES`, `DEFAULT_LOCALE`, `messages`.
+- `src/boot/i18n.js` — creates the i18n instance, restores the saved locale, exposes `setLocale()` (persists to `localStorage`).
+- All user-facing strings live in the message files; **zero** hardcoded UI copy remains in components. Validation messages are produced via `t()` inside `useValidation`, so error text localizes too.
+- Ticket display copy (`label`/`perks`) moved out of `usePricing` into `tickets.*`; `usePricing` now holds numeric `TICKET_PRICES` only — a single source of truth per concern.
 
 ---
 
@@ -90,14 +99,20 @@ This project was developed with Claude Code (Claude Sonnet 4.6) as the primary A
 
 ---
 
+## Nice-to-haves implemented
+
+Both spec "nice to have" items were completed:
+
+1. **i18n support** — `vue-i18n` wired in via boot file; English + Traditional Chinese, locale switcher in the header, choice persisted to `localStorage`, dates localized via the active locale. See *Additional Dependencies → i18n architecture* above.
+
+2. **Responsive design** — stepper compresses on mobile (only the active step shows its label; inactive steps collapse to numbered circles), pricing/summary rows guard against overflow with `min-w-0` + `whitespace-nowrap`, ticket cards stack single-column and the add-ons summary stacks below the list under the `lg` breakpoint.
+
 ## What I Would Improve Given More Time
 
-1. **i18n support** — Extract all user-facing strings into a `messages/en.js` file and wire up `vue-i18n`. The composables and components are already structured with clear string boundaries.
+1. **Mobile OrderSummary as a collapsible drawer** — it currently stacks below the add-ons list under `lg`; a sticky bottom-sheet would keep the running total visible while scrolling a long add-on list.
 
-2. **Responsive mobile design** — The current layout uses `md:grid-cols-3` for ticket cards and `lg:flex-row` for the add-ons sidebar. On mobile (< 768px) the sidebar stacks below; the ticket cards stack to single column. This is functional but not fully polished — the OrderSummary on mobile could be a collapsible drawer.
+2. **Persist state to localStorage** — A `useRegistration` enhancement: watch the state and debounce-save to `localStorage` under a session key. On page reload, hydrate from it. Prevents data loss on accidental refresh.
 
-3. **Persist state to localStorage** — A `useRegistration` enhancement: watch the state and debounce-save to `localStorage` under a session key. On page reload, hydrate from it. Prevents data loss on accidental refresh.
+3. **Animated step counter** — The connector lines between steps could fill in with a green animation as steps complete, giving a stronger "progress" feel.
 
-4. **Animated step counter** — The connector lines between steps could fill in with a green animation as steps complete, giving a stronger "progress" feel.
-
-5. **Keyboard navigation audit** — The custom ticket cards and session cards use `role="radio"` / `role="checkbox"` with `keydown.enter.space` handlers, but a full ARIA review (focus management across step transitions, focus trap review) would be needed for production.
+4. **Keyboard navigation audit** — The custom ticket cards and session cards use `role="radio"` / `role="checkbox"` with `keydown.enter.space` handlers, but a full ARIA review (focus management across step transitions, focus trap review) would be needed for production.

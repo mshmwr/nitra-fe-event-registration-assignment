@@ -1,6 +1,7 @@
 <script setup>
-import { computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useRegistration } from 'src/composables/useRegistration.js'
+import { TICKET_TYPES } from 'src/composables/usePricing.js'
 import TicketCard from 'src/components/TicketCard.vue'
 
 const props = defineProps({
@@ -8,9 +9,9 @@ const props = defineProps({
   showErrors: { type: Boolean, default: false },
 })
 
-const state = useRegistration()
+const { t } = useI18n()
 
-const TICKET_TYPES = ['general', 'vip', 'student']
+const state = useRegistration()
 
 /**
  * Whether a field should show its error state.
@@ -26,8 +27,8 @@ function hasError(field) {
   <div class="step-attendee space-y-8">
     <!-- Ticket type -->
     <section>
-      <h2 class="text-subtitle1 text-neutral mb-1">Ticket Type</h2>
-      <p class="text-sm text-neutral-muted mb-4">Select the ticket tier that best fits you.</p>
+      <h2 class="text-subtitle1 text-neutral mb-1">{{ t('tickets.sectionTitle') }}</h2>
+      <p class="text-sm text-neutral-muted mb-4">{{ t('tickets.sectionHint') }}</p>
       <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
         <TicketCard
           v-for="type in TICKET_TYPES"
@@ -41,12 +42,12 @@ function hasError(field) {
 
     <!-- Personal info -->
     <section>
-      <h2 class="text-subtitle1 text-neutral mb-4">Personal Information</h2>
+      <h2 class="text-subtitle1 text-neutral mb-4">{{ t('attendee.personalInfo') }}</h2>
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
 
         <q-input
           v-model="state.attendee.name"
-          label="Full Name *"
+          :label="t('attendee.name')"
           outlined
           :error="hasError('name')"
           :error-message="errors.name"
@@ -55,7 +56,7 @@ function hasError(field) {
 
         <q-input
           v-model="state.attendee.email"
-          label="Email *"
+          :label="t('attendee.email')"
           type="email"
           outlined
           :error="hasError('email')"
@@ -65,7 +66,7 @@ function hasError(field) {
 
         <q-input
           v-model="state.attendee.phone"
-          label="Phone *"
+          :label="t('attendee.phone')"
           type="tel"
           outlined
           :error="hasError('phone')"
@@ -75,7 +76,7 @@ function hasError(field) {
 
         <q-input
           v-model="state.attendee.company"
-          label="Company *"
+          :label="t('attendee.company')"
           outlined
           :error="hasError('company')"
           :error-message="errors.company"
@@ -84,7 +85,7 @@ function hasError(field) {
 
         <q-input
           v-model="state.attendee.jobTitle"
-          label="Job Title *"
+          :label="t('attendee.jobTitle')"
           outlined
           :error="hasError('jobTitle')"
           :error-message="errors.jobTitle"
@@ -94,8 +95,8 @@ function hasError(field) {
 
         <q-input
           v-model="state.attendee.shippingAddress"
-          label="Shipping Address"
-          hint="Required if you select merchandise in Step 3"
+          :label="t('attendee.shippingAddress')"
+          :hint="t('attendee.shippingHint')"
           outlined
           :error="hasError('shippingAddress')"
           :error-message="errors.shippingAddress"

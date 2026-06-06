@@ -1,5 +1,6 @@
 <script setup>
 import { computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useRegistration } from 'src/composables/useRegistration.js'
 import { useConflicts } from 'src/composables/useConflicts.js'
 import { sessions } from 'src/mocks/sessions.js'
@@ -9,6 +10,8 @@ const props = defineProps({
   errors: { type: Object, default: () => ({}) },
   showErrors: { type: Boolean, default: false },
 })
+
+const { t, locale } = useI18n()
 
 const state = useRegistration()
 const selectedSessionIdsRef = computed(() => state.selectedSessionIds)
@@ -28,7 +31,7 @@ const sessionsByDay = computed(() => {
   return Object.entries(groups)
     .sort(([a], [b]) => a.localeCompare(b))
     .map(([dateKey, daySessions]) => ({
-      dateLabel: new Date(dateKey + 'T00:00:00Z').toLocaleDateString('en-US', {
+      dateLabel: new Date(dateKey + 'T00:00:00Z').toLocaleDateString(locale.value, {
         weekday: 'long',
         month: 'long',
         day: 'numeric',
@@ -52,11 +55,11 @@ function toggleSession(id) {
   <div class="step-sessions space-y-8">
     <div class="flex items-start justify-between gap-4">
       <div>
-        <h2 class="text-subtitle1 text-neutral mb-1">Select Sessions</h2>
-        <p class="text-sm text-neutral-muted">Choose the sessions you'd like to attend. Conflicts will be flagged at submission.</p>
+        <h2 class="text-subtitle1 text-neutral mb-1">{{ t('sessions.title') }}</h2>
+        <p class="text-sm text-neutral-muted">{{ t('sessions.hint') }}</p>
       </div>
       <span class="flex-shrink-0 text-sm text-neutral-muted">
-        {{ state.selectedSessionIds.length }} selected
+        {{ t('sessions.selected', { count: state.selectedSessionIds.length }) }}
       </span>
     </div>
 

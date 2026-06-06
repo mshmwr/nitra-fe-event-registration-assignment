@@ -1,5 +1,6 @@
 <script setup>
 import { computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 
 const props = defineProps({
   session: { type: Object, required: true },
@@ -8,6 +9,8 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['toggle'])
+
+const { t, locale } = useI18n()
 
 const isFull = computed(() => props.session.registered >= props.session.capacity)
 const remaining = computed(() => props.session.capacity - props.session.registered)
@@ -25,7 +28,7 @@ const TRACK_COLORS = {
  * @returns {string}
  */
 function formatTime(iso) {
-  return new Date(iso).toLocaleTimeString('en-US', {
+  return new Date(iso).toLocaleTimeString(locale.value, {
     hour: 'numeric',
     minute: '2-digit',
     timeZone: 'UTC',
@@ -68,9 +71,9 @@ function formatTime(iso) {
           </span>
           <span v-if="conflicting && selected" class="inline-flex items-center gap-1 text-danger text-xs">
             <span class="material-icons text-sm">warning</span>
-            Time conflict
+            {{ t('sessions.timeConflict') }}
           </span>
-          <span v-if="isFull" class="text-neutral-quiet text-xs">Full</span>
+          <span v-if="isFull" class="text-neutral-quiet text-xs">{{ t('sessions.full') }}</span>
         </div>
         <p class="text-subtitle2 text-neutral leading-snug">{{ session.title }}</p>
         <p class="text-sm text-neutral-muted mt-0.5">{{ session.speaker }} · {{ session.speakerTitle }}</p>
@@ -78,7 +81,7 @@ function formatTime(iso) {
           {{ formatTime(session.date) }} – {{ formatTime(session.endDate) }}
           <span class="mx-1">·</span>
           <span :class="remaining <= 10 ? 'text-warning' : 'text-neutral-quiet'">
-            {{ isFull ? 'No spots left' : `${remaining} spot${remaining === 1 ? '' : 's'} left` }}
+            {{ isFull ? t('sessions.noSpots') : t('sessions.spotsLeft', remaining) }}
           </span>
         </p>
       </div>

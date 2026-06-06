@@ -1,5 +1,6 @@
 <script setup>
 import { computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useRegistration } from 'src/composables/useRegistration.js'
 import { useConflicts } from 'src/composables/useConflicts.js'
 import { addons } from 'src/mocks/addons.js'
@@ -12,6 +13,8 @@ const props = defineProps({
   showErrors: { type: Boolean, default: false },
 })
 
+const { t } = useI18n()
+
 const state = useRegistration()
 const selectedSessionIdsRef = computed(() => state.selectedSessionIds)
 const { workshopConflictsWithSessions } = useConflicts(selectedSessionIdsRef)
@@ -19,9 +22,9 @@ const { workshopConflictsWithSessions } = useConflicts(selectedSessionIdsRef)
 const isVip = computed(() => state.ticketType === 'vip')
 
 const categories = [
-  { key: 'workshop', label: 'Workshops' },
-  { key: 'meal', label: 'Meal Packages' },
-  { key: 'merchandise', label: 'Merchandise' },
+  { key: 'workshop', labelKey: 'addons.categories.workshop' },
+  { key: 'meal', labelKey: 'addons.categories.meal' },
+  { key: 'merchandise', labelKey: 'addons.categories.merchandise' },
 ]
 
 const addonsByCategory = computed(() => {
@@ -52,8 +55,8 @@ function handleAddonUpdate(id, selection) {
       <!-- Main content -->
       <div class="flex-1 min-w-0 space-y-8">
         <div>
-          <h2 class="text-subtitle1 text-neutral mb-1">Add-ons</h2>
-          <p class="text-sm text-neutral-muted">Enhance your conference experience with workshops, meals, and merchandise.</p>
+          <h2 class="text-subtitle1 text-neutral mb-1">{{ t('addons.title') }}</h2>
+          <p class="text-sm text-neutral-muted">{{ t('addons.hint') }}</p>
         </div>
 
         <!-- Workshop conflict validation error (shown after submit attempt) -->
@@ -80,13 +83,12 @@ function handleAddonUpdate(id, selection) {
           class="flex items-start gap-3 p-3 rounded-lg bg-info-muted-rest border border-info-muted text-info text-sm"
         >
           <span class="material-icons text-base flex-shrink-0 mt-0.5">local_shipping</span>
-          Merchandise items will be shipped to your address one week before the conference.
-          Please ensure your shipping address in Step 1 is correct.
+          {{ t('addons.shippingBanner') }}
         </div>
 
         <div v-for="cat in categories" :key="cat.key" class="space-y-3">
           <h3 class="text-sm font-semibold text-neutral-muted uppercase tracking-wide border-b divider-default pb-2">
-            {{ cat.label }}
+            {{ t(cat.labelKey) }}
           </h3>
           <div class="space-y-2">
             <AddonItem

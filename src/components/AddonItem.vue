@@ -1,5 +1,6 @@
 <script setup>
 import { computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { workshopUnitPrice, formatPrice } from 'src/composables/usePricing.js'
 
 const props = defineProps({
@@ -12,6 +13,8 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['update'])
+
+const { t, locale } = useI18n()
 
 const isSelected = computed(() => props.selection !== null)
 const isFull = computed(() => props.addon.capacity != null && props.addon.registered >= props.addon.capacity)
@@ -33,7 +36,8 @@ const remaining = computed(() => {
 function formatTimeRange(start, end) {
   const opts = { hour: 'numeric', minute: '2-digit', timeZone: 'UTC' }
   const dateOpts = { month: 'short', day: 'numeric', timeZone: 'UTC' }
-  return `${new Date(start).toLocaleDateString('en-US', dateOpts)}, ${new Date(start).toLocaleTimeString('en-US', opts)} – ${new Date(end).toLocaleTimeString('en-US', opts)}`
+  const loc = locale.value
+  return `${new Date(start).toLocaleDateString(loc, dateOpts)}, ${new Date(start).toLocaleTimeString(loc, opts)} – ${new Date(end).toLocaleTimeString(loc, opts)}`
 }
 
 function toggleSelect() {
@@ -88,7 +92,7 @@ function updateQuantity(delta) {
               : 'border-[var(--border-neutral-muted)] cursor-pointer hover:border-[var(--border-brand-emphasis)]',
         ]"
         :aria-checked="isSelected"
-        :aria-label="isSelected ? `Remove ${addon.name}` : `Select ${addon.name}`"
+        :aria-label="isSelected ? t('addons.removeAria', { name: addon.name }) : t('addons.selectAria', { name: addon.name })"
         @click="toggleSelect"
       >
         <span v-if="isSelected" class="material-icons text-white text-sm">check</span>
@@ -103,7 +107,7 @@ function updateQuantity(delta) {
               v-if="addon.category === 'workshop' && isVip"
               class="ml-2 text-xs bg-accent-muted-rest text-accent px-1.5 py-0.5 rounded"
             >
-              VIP -10%
+              {{ t('addons.vipDiscount') }}
             </span>
           </div>
           <div class="text-right flex-shrink-0">
@@ -123,17 +127,17 @@ function updateQuantity(delta) {
             {{ formatTimeRange(addon.date, addon.endDate) }}
           </span>
           <span v-if="remaining !== null" :class="remaining <= 5 ? 'text-warning' : ''">
-            {{ isFull ? 'Full' : `${remaining} spot${remaining === 1 ? '' : 's'} left` }}
+            {{ isFull ? t('addons.full') : t('addons.spotsLeft', remaining) }}
           </span>
           <span v-if="conflictsWithSession" class="flex items-center gap-1 text-danger">
             <span class="material-icons text-sm">warning</span>
-            Conflicts with a selected session
+            {{ t('addons.conflict') }}
           </span>
         </div>
 
         <!-- Quantity picker (merchandise) -->
         <div v-if="isSelected && addon.maxQuantity && addon.maxQuantity > 1" class="mt-2 flex items-center gap-2">
-          <span class="text-sm text-neutral-muted">Qty:</span>
+          <span class="text-sm text-neutral-muted">{{ t('addons.qty') }}</span>
           <button
             type="button"
             class="w-7 h-7 rounded border border-neutral-muted flex items-center justify-center text-neutral hover:bg-neutral-muted-rest disabled:opacity-40 transition-colors"
@@ -151,12 +155,12 @@ function updateQuantity(delta) {
           >
             <span class="material-icons text-sm">add</span>
           </button>
-          <span class="text-xs text-neutral-quiet">max {{ addon.maxQuantity }}</span>
+          <span class="text-xs text-neutral-quiet">{{ t('addons.max', { count: addon.maxQuantity }) }}</span>
         </div>
 
         <!-- Size selector (merchandise with sizes) -->
         <div v-if="isSelected && addon.sizes?.length" class="mt-2 flex flex-wrap items-center gap-2">
-          <span class="text-sm text-neutral-muted">Size:</span>
+          <span class="text-sm text-neutral-muted">{{ t('addons.size') }}</span>
           <button
             v-for="size in addon.sizes"
             :key="size"
