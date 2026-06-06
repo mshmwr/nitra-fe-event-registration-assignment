@@ -9,8 +9,9 @@ const PHONE_RE = /^\+?(?=.*\d)[\d\s\-().]{7,20}$/
  * Unified cross-step validation. All rules run on every submit attempt.
  * @param {import('vue').Reactive} state - registration state from provideRegistration
  * @param {import('vue').ComputedRef<Set<string>>} conflictingSessionIds
+ * @param {import('vue').ComputedRef<Set<string>>} [conflictingWorkshopIds] - selected workshops overlapping a session
  */
-export function useValidation(state, conflictingSessionIds) {
+export function useValidation(state, conflictingSessionIds, conflictingWorkshopIds = null) {
   const hasMerchandise = computed(() =>
     Object.keys(state.selectedAddons).some(id => {
       const addon = addons.find(a => a.id === id)
@@ -53,6 +54,9 @@ export function useValidation(state, conflictingSessionIds) {
     if (hasMerchandise.value && !state.attendee.shippingAddress.trim()) {
       errs.shippingAddress = 'Shipping address is required. Please fill it in Step 1.'
     }
+    if (conflictingWorkshopIds && conflictingWorkshopIds.value.size > 0) {
+      errs.workshopConflicts = 'One or more selected workshops conflict with your chosen sessions. Please remove them.'
+    }
     return errs
   })
 
@@ -68,7 +72,9 @@ export function useValidation(state, conflictingSessionIds) {
     4: false,
   }))
 
-  const isValid = computed(() => !hasStep1Errors.value && !hasStep2Errors.value)
+  const isValid = computed(() =>
+    !hasStep1Errors.value && !hasStep2Errors.value && !hasStep3Errors.value
+  )
 
   return { step1Errors, step2Errors, step3Errors, stepHasErrors, isValid, hasMerchandise }
 }

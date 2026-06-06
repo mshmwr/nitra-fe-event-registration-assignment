@@ -12,11 +12,11 @@ import StepReviewSubmit from 'src/components/steps/StepReviewSubmit.vue'
 const state = provideRegistration()
 
 const selectedSessionIdsRef = computed(() => state.selectedSessionIds)
-const { conflictingSessionIds } = useConflicts(selectedSessionIdsRef)
-const { step1Errors, step2Errors, step3Errors, stepHasErrors, isValid, hasMerchandise } = useValidation(state, conflictingSessionIds)
+const selectedAddonsRef = computed(() => state.selectedAddons)
+const { conflictingSessionIds, conflictingWorkshopIds } = useConflicts(selectedSessionIdsRef, selectedAddonsRef)
+const { step1Errors, step2Errors, step3Errors, stepHasErrors, isValid, hasMerchandise } = useValidation(state, conflictingSessionIds, conflictingWorkshopIds)
 
 const ticketTypeRef = computed(() => state.ticketType)
-const selectedAddonsRef = computed(() => state.selectedAddons)
 providePricing(ticketTypeRef, selectedAddonsRef)
 
 const STEPS = [
@@ -157,6 +157,7 @@ function stepStatus(n) {
               v-else-if="currentStep === 4"
               :key="4"
               :step-has-errors="stepHasErrors"
+              :step3-errors="step3Errors"
               :show-errors="showErrors"
               @goto-step="goTo"
               @submit="submit"

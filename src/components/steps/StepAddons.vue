@@ -56,6 +56,15 @@ function handleAddonUpdate(id, selection) {
           <p class="text-sm text-neutral-muted">Enhance your conference experience with workshops, meals, and merchandise.</p>
         </div>
 
+        <!-- Workshop conflict validation error (shown after submit attempt) -->
+        <div
+          v-if="showErrors && step3Errors.workshopConflicts"
+          class="flex items-start gap-3 p-3 rounded-lg bg-danger-muted-rest border border-danger-muted text-danger text-sm"
+        >
+          <span class="material-icons text-base flex-shrink-0 mt-0.5">warning</span>
+          {{ step3Errors.workshopConflicts }}
+        </div>
+
         <!-- Shipping address validation error (shown after submit attempt) -->
         <div
           v-if="showErrors && step3Errors.shippingAddress"

@@ -37,13 +37,15 @@ function formatTimeRange(start, end) {
 }
 
 function toggleSelect() {
-  if (isDisabled.value) return
+  // Always allow removal — a workshop can become conflicting/full after it was
+  // selected, and the user must be able to take it back out of the order.
   if (isSelected.value) {
     emit('update', props.addon.id, null)
-  } else {
-    const initial = { quantity: 1, size: props.addon.sizes?.[0] ?? null }
-    emit('update', props.addon.id, initial)
+    return
   }
+  if (isDisabled.value) return
+  const initial = { quantity: 1, size: props.addon.sizes?.[0] ?? null }
+  emit('update', props.addon.id, initial)
 }
 
 function updateSize(size) {
@@ -72,20 +74,21 @@ function updateQuantity(delta) {
     ]"
   >
     <div class="flex items-start gap-3">
-      <!-- Checkbox / toggle area -->
+      <!-- Checkbox / toggle area. Stays enabled while selected so a workshop that
+           became conflicting/full can still be removed from the order. -->
       <button
         type="button"
-        :disabled="isDisabled"
+        :disabled="isDisabled && !isSelected"
         class="mt-0.5 flex-shrink-0 w-5 h-5 rounded border-2 flex items-center justify-center transition-colors"
         :class="[
-          isDisabled
+          isDisabled && !isSelected
             ? 'border-neutral-muted cursor-not-allowed'
             : isSelected
               ? 'border-[var(--border-brand-emphasis)] bg-[var(--bg-brand-emphasis-rest)] cursor-pointer'
               : 'border-[var(--border-neutral-muted)] cursor-pointer hover:border-[var(--border-brand-emphasis)]',
         ]"
         :aria-checked="isSelected"
-        :aria-label="`Select ${addon.name}`"
+        :aria-label="isSelected ? `Remove ${addon.name}` : `Select ${addon.name}`"
         @click="toggleSelect"
       >
         <span v-if="isSelected" class="material-icons text-white text-sm">check</span>

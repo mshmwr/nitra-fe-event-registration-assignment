@@ -7,6 +7,7 @@ import { addons } from 'src/mocks/addons.js'
 
 const props = defineProps({
   stepHasErrors: { type: Object, default: () => ({}) },
+  step3Errors: { type: Object, default: () => ({}) },
   showErrors: { type: Boolean, default: false },
 })
 
@@ -60,7 +61,10 @@ function formatDate(iso) {
         </li>
         <li v-if="stepHasErrors[3]" class="text-sm text-danger">
           <button type="button" class="underline hover:no-underline" @click="emit('goto-step', 3)">
-            Step 3 — Shipping address required for merchandise
+            Step 3 —
+            {{ step3Errors.workshopConflicts
+              ? 'Workshop conflicts with a selected session'
+              : 'Shipping address required for merchandise' }}
           </button>
         </li>
       </ul>

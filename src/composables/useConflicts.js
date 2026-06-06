@@ -1,5 +1,6 @@
 import { computed } from 'vue'
 import { sessions } from 'src/mocks/sessions.js'
+import { addons } from 'src/mocks/addons.js'
 
 /**
  * Check if two half-open time ranges overlap.
@@ -16,8 +17,9 @@ export function hasTimeOverlap(s1, e1, s2, e2) {
 /**
  * Provides conflict detection for sessions and workshop overlap checks.
  * @param {import('vue').Ref<string[]>} selectedSessionIds
+ * @param {import('vue').Ref<Record<string, object>>} [selectedAddons] - optional; enables conflictingWorkshopIds
  */
-export function useConflicts(selectedSessionIds) {
+export function useConflicts(selectedSessionIds, selectedAddons = null) {
   /** Cached list of selected session objects, shared across conflict checks. */
   const selectedSessions = computed(() =>
     sessions.filter(s => selectedSessionIds.value.includes(s.id))
@@ -52,5 +54,23 @@ export function useConflicts(selectedSessionIds) {
     return selectedSessions.value.some(s => hasTimeOverlap(s.date, s.endDate, workshop.date, workshop.endDate))
   }
 
-  return { conflictingSessionIds, workshopConflictsWithSessions }
+  /**
+   * Set of currently-selected workshop addon IDs that overlap a selected session.
+   * A previously-selected workshop can become conflicting after the user adds a
+   * session in Step 2 — this set drives both validation and the removal prompt.
+   * @type {import('vue').ComputedRef<Set<string>>}
+   */
+  const conflictingWorkshopIds = computed(() => {
+    const conflicts = new Set()
+    if (!selectedAddons) return conflicts
+    for (const id of Object.keys(selectedAddons.value)) {
+      const addon = addons.find(a => a.id === id)
+      if (addon?.category === 'workshop' && workshopConflictsWithSessions(addon)) {
+        conflicts.add(id)
+      }
+    }
+    return conflicts
+  })
+
+  return { conflictingSessionIds, workshopConflictsWithSessions, conflictingWorkshopIds }
 }
