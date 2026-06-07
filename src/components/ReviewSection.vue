@@ -13,12 +13,18 @@ const { t } = useI18n()
 </script>
 
 <template>
-  <section class="rounded-md border border-neutral-muted bg-surface-l1 p-5 space-y-3">
+  <section
+    class="rounded-md border-solid bg-surface-l1 p-5 space-y-3"
+    :class="hasError && showErrors ? 'border-2' : 'border'"
+    :style="hasError && showErrors ? { borderColor: 'var(--border-danger-emphasis)' } : { borderColor: 'var(--border-neutral-muted)' }"
+  >
     <div class="flex items-center justify-between">
-      <h3 class="text-base font-semibold text-neutral flex items-center gap-2">
-        <span v-if="hasError && showErrors" class="material-icons text-danger text-base">error</span>
+      <div
+        class="text-base font-semibold mt-0 mb-3"
+        :class="hasError && showErrors ? 'text-danger' : 'text-neutral'"
+      >
         {{ title }}
-      </h3>
+      </div>
       <button
         v-if="step > 0"
         type="button"
@@ -26,7 +32,6 @@ const { t } = useI18n()
         @click="emit('edit')"
       >
         {{ t('review.editStep', { step }) }}
-        <span class="material-icons" style="font-size: 14px;">arrow_forward</span>
       </button>
     </div>
     <slot />

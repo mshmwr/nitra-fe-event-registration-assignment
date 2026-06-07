@@ -9,6 +9,8 @@ import ReviewRow from 'src/components/ReviewRow.vue'
 
 const props = defineProps({
   stepHasErrors: { type: Object, required: true },
+  step1Errors: { type: Object, required: true },
+  step2Errors: { type: Object, required: true },
   step3Errors: { type: Object, required: true },
   showErrors: { type: Boolean, required: true },
 })
@@ -19,6 +21,27 @@ const { t, locale } = useI18n()
 
 const state = useRegistration()
 const { ticketPrice, addonLineItems, vipWorkshopDiscount, total } = usePricingInjected()
+
+const hasMerchandise = computed(() => addonLineItems.value.some(item => item.category === 'merchandise'))
+
+function reqText(value) {
+  return (!value && props.showErrors) ? t('review.required') : ''
+}
+
+const mercReqText = computed(() =>
+  (hasMerchandise.value && !state.attendee.shippingAddress && props.showErrors)
+    ? t('review.requiredForMerchandise') : ''
+)
+
+const allErrors = computed(() => {
+  if (!props.showErrors) return []
+  const list = []
+  const pfx = (n) => t('review.errorBannerStep', { step: n })
+  for (const msg of Object.values(props.step1Errors)) list.push(`${pfx(1)} ${msg}`)
+  for (const msg of Object.values(props.step2Errors)) list.push(`${pfx(2)} ${msg}`)
+  if (props.step3Errors.workshopConflicts) list.push(`${pfx(3)} ${props.step3Errors.workshopConflicts}`)
+  return list
+})
 
 const ticketLabel = computed(() => t(`tickets.${state.ticketType}.label`))
 const ticketDisplay = computed(() => `${ticketLabel.value} (${formatPrice(ticketPrice.value)})`)
@@ -47,28 +70,16 @@ function categoryLabel(cat) {
 
     <!-- Validation error summary -->
     <div
-      v-if="showErrors && (stepHasErrors[1] || stepHasErrors[2] || stepHasErrors[3])"
-      class="p-4 rounded-md bg-danger-muted-rest border border-danger-muted space-y-2"
+      v-if="allErrors.length > 0"
+      class="p-4 rounded-md bg-danger-muted-rest border border-solid space-y-2"
+      :style="{ borderColor: 'var(--border-danger-muted)' }"
     >
-      <div class="flex items-center gap-2 text-danger font-medium text-sm">
-        <span class="material-icons text-base">error_outline</span>
+      <div class="flex items-center gap-2 text-danger font-semibold text-sm">
         {{ t('review.fixIssues') }}
       </div>
-      <ul class="space-y-1 pl-6">
-        <li v-if="stepHasErrors[1]" class="text-sm text-danger">
-          <button type="button" class="underline hover:no-underline border-0 bg-transparent p-0 cursor-pointer" @click="emit('goto-step', 1)">
-            {{ t('review.errorStep1') }}
-          </button>
-        </li>
-        <li v-if="stepHasErrors[2]" class="text-sm text-danger">
-          <button type="button" class="underline hover:no-underline border-0 bg-transparent p-0 cursor-pointer" @click="emit('goto-step', 2)">
-            {{ t('review.errorStep2') }}
-          </button>
-        </li>
-        <li v-if="stepHasErrors[3]" class="text-sm text-danger">
-          <button type="button" class="underline hover:no-underline border-0 bg-transparent p-0 cursor-pointer" @click="emit('goto-step', 3)">
-            {{ step3Errors.workshopConflicts ? t('review.errorStep3Workshop') : t('review.errorStep3Shipping') }}
-          </button>
+      <ul class="space-y-1 pl-6 list-disc">
+        <li v-for="(err, i) in allErrors" :key="i" class="text-sm text-danger">
+          {{ err }}
         </li>
       </ul>
     </div>
@@ -81,13 +92,18 @@ function categoryLabel(cat) {
       :show-errors="showErrors"
       @edit="emit('goto-step', 1)"
     >
-      <ReviewRow :label="t('review.fieldName')" :value="state.attendee.name" />
-      <ReviewRow :label="t('review.fieldEmail')" :value="state.attendee.email" />
-      <ReviewRow :label="t('review.fieldPhone')" :value="state.attendee.phone" />
-      <ReviewRow :label="t('review.fieldCompany')" :value="state.attendee.company" />
-      <ReviewRow :label="t('review.fieldJobTitle')" :value="state.attendee.jobTitle" />
+      <ReviewRow :label="t('review.fieldName')" :value="state.attendee.name" :error-text="reqText(state.attendee.name)" />
+      <ReviewRow :label="t('review.fieldEmail')" :value="state.attendee.email" :error-text="reqText(state.attendee.email)" />
+      <ReviewRow :label="t('review.fieldPhone')" :value="state.attendee.phone" :error-text="reqText(state.attendee.phone)" />
+      <ReviewRow :label="t('review.fieldCompany')" :value="state.attendee.company" :error-text="reqText(state.attendee.company)" />
+      <ReviewRow :label="t('review.fieldJobTitle')" :value="state.attendee.jobTitle" :error-text="reqText(state.attendee.jobTitle)" />
       <ReviewRow :label="t('review.fieldTicket')" :value="ticketDisplay" />
-      <ReviewRow v-if="state.attendee.shippingAddress" :label="t('review.fieldShipping')" :value="state.attendee.shippingAddress" />
+      <ReviewRow
+        v-if="state.attendee.shippingAddress || (hasMerchandise && showErrors)"
+        :label="t('review.fieldShipping')"
+        :value="state.attendee.shippingAddress"
+        :error-text="mercReqText"
+      />
     </ReviewSection>
 
     <!-- Selected Sessions -->
@@ -140,8 +156,7 @@ function categoryLabel(cat) {
       />
       <div
         v-if="vipWorkshopDiscount > 0"
-        class="flex justify-between gap-4"
-        style="font-size: 11px; color: rgba(38,77,79,1);"
+        class="flex justify-between gap-4 text-sm text-brand-emphasis"
       >
         <span>{{ t('orderSummary.vipNote') }}</span>
         <span class="flex-shrink-0">-{{ formatPrice(vipWorkshopDiscount) }}</span>
@@ -152,16 +167,5 @@ function categoryLabel(cat) {
       </div>
     </ReviewSection>
 
-    <!-- Submit -->
-    <div class="flex justify-end">
-      <button
-        type="button"
-        class="px-6 py-3 rounded-lg text-white text-base font-semibold border-0 cursor-pointer"
-        style="background-color: #fb7429;"
-        @click="emit('submit')"
-      >
-        {{ t('review.submit') }}
-      </button>
-    </div>
   </div>
 </template>

@@ -56,6 +56,7 @@ function formatTime(iso) {
     :selected="selected && !conflicting"
     :error="selected && conflicting"
     :disabled="isFull"
+    :thick="selected"
     class="session-card rounded-lg p-4"
     :class="[
       isFull ? 'cursor-not-allowed' : 'cursor-pointer',
@@ -65,12 +66,12 @@ function formatTime(iso) {
     @click="!isFull && emit('toggle', session.id)"
     @keydown.enter.space.prevent="!isFull && emit('toggle', session.id)"
   >
-    <div class="flex flex-col gap-2">
+    <div class="flex flex-col gap-1">
       <!-- Top row: track badge + conflict badge + checkbox -->
       <div class="flex items-center justify-between gap-2">
         <div class="flex flex-wrap items-center gap-2">
           <span
-            class="inline-block px-2 py-0.5 rounded text-xs font-medium capitalize"
+            class="inline-block px-2 py-1 rounded-full text-xs font-medium uppercase"
             :class="TRACK_COLORS[session.track] ?? 'bg-neutral-muted-rest text-neutral-muted'"
           >
             {{ session.track }}
@@ -83,10 +84,10 @@ function formatTime(iso) {
         </div>
         <div
           v-if="!isFull"
-          class="w-5 h-5 rounded border-2 flex-shrink-0 flex items-center justify-center transition-colors"
+          class="w-5 h-5 rounded border-solid border-2 flex-shrink-0 flex items-center justify-center transition-colors"
           :class="selected
             ? (conflicting ? 'border-[var(--border-danger-emphasis)] bg-[var(--bg-danger-emphasis-rest)]' : 'border-[var(--border-brand-emphasis)] bg-[var(--bg-brand-emphasis-rest)]')
-            : 'border-neutral-muted'"
+            : 'border-neutral-emphasis'"
         >
           <span v-if="selected" class="material-icons text-white text-sm">check</span>
         </div>
@@ -94,9 +95,9 @@ function formatTime(iso) {
 
       <!-- Title + speaker -->
       <div>
-        <p class="text-subtitle2 text-neutral leading-snug">{{ session.title }}</p>
-        <p class="text-sm text-neutral-muted mt-0.5">{{ session.speaker }} · {{ session.speakerTitle }}</p>
-        <p class="text-sm text-neutral-quiet mt-1">
+        <p class="m-0 text-subtitle2 text-neutral leading-snug" :class="selected ? '!font-bold' : ''">{{ session.title }}</p>
+        <p class="m-0 text-sm text-neutral-muted mt-0.5">{{ session.speaker }}, {{ session.speakerTitle }}</p>
+        <p class="m-0 text-sm text-neutral-quiet mt-1">
           {{ formatTime(session.date) }} – {{ formatTime(session.endDate) }}
         </p>
       </div>
@@ -109,7 +110,7 @@ function formatTime(iso) {
             :style="{ width: `${Math.min(capacityRatio * 100, 100)}%`, backgroundColor: barColor }"
           />
         </div>
-        <p class="text-xs" :class="spotsClass">
+        <p class="m-0 text-xs" :class="spotsClass">
           <template v-if="isFull">Sold Out</template>
           <template v-else>{{ t('sessions.spotsLeft', remaining) }}</template>
         </p>

@@ -47,16 +47,9 @@ export function useValidation(state, conflictingSessionIds, conflictingWorkshopI
     return errs
   })
 
-  /**
-   * Step 3 indicator: shipping address is in Step 1 but triggered by Step 3 merchandise selection.
-   * Marking Step 3 lets the user understand which step caused the Step 1 error.
-   * @type {import('vue').ComputedRef<Record<string, string>>}
-   */
+  /** @type {import('vue').ComputedRef<Record<string, string>>} */
   const step3Errors = computed(() => {
     const errs = {}
-    if (hasMerchandise.value && !state.attendee.shippingAddress.trim()) {
-      errs.shippingAddress = t('validation.shippingRequiredStep3')
-    }
     if (conflictingWorkshopIds && conflictingWorkshopIds.value.size > 0) {
       errs.workshopConflicts = t('validation.workshopConflicts')
     }

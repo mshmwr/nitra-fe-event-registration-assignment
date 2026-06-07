@@ -69,9 +69,10 @@ function updateSize(size) {
     :disabled="isDisabled"
     class="addon-item rounded-lg p-4"
     :class="[
-      !isDisabled && !isSelected ? 'border-neutral-muted bg-surface-l0' : '',
-      !isMerchandise && !isDisabled ? 'cursor-pointer hover:border-neutral-emphasis' : '',
+      !isDisabled && !isSelected ? 'border-solid bg-surface-l0' : '',
+      !isMerchandise && !isDisabled ? 'cursor-pointer' : '',
     ]"
+    :style="!isDisabled && !isSelected ? { borderColor: 'var(--border-neutral-muted)' } : {}"
     @click="toggleCard"
   >
     <!-- Name + price -->
@@ -81,7 +82,7 @@ function updateSize(size) {
     </div>
 
     <!-- Description -->
-    <p class="text-sm text-neutral-muted mt-0.5">{{ addon.description }}</p>
+    <p class="text-sm text-neutral-muted mt-0.5 mb-2">{{ addon.description }}</p>
 
     <!-- Workshop: time + spots + conflict -->
     <div v-if="addon.category === 'workshop'" class="mt-1 flex flex-wrap items-center gap-3 text-xs text-neutral-quiet">
@@ -104,20 +105,14 @@ function updateSize(size) {
         <!-- Size selector (always shown if has sizes) -->
         <div v-if="addon.sizes?.length" class="flex items-center gap-2">
           <span class="text-sm text-neutral-muted">{{ t('addons.size') }}</span>
-          <div class="flex flex-wrap gap-1.5">
-            <button
-              v-for="size in addon.sizes"
-              :key="size"
-              type="button"
-              class="px-2.5 py-0.5 rounded border text-sm transition-colors"
-              :class="selection?.size === size
-                ? 'border-brand-emphasis bg-brand-muted-rest text-brand font-medium'
-                : 'border-neutral-muted text-neutral-muted hover:border-neutral-emphasis'"
-              @click="updateSize(size)"
-            >
-              {{ size }}
-            </button>
-          </div>
+          <select
+            :value="selection?.size ?? ''"
+            class="px-2 py-0.5 rounded-md border border-neutral-muted bg-surface-l0 text-sm text-neutral cursor-pointer"
+            @change="e => updateSize(e.target.value)"
+          >
+            <option value="" disabled>{{ t('addons.selectSize') }}</option>
+            <option v-for="size in addon.sizes" :key="size" :value="size">{{ size }}</option>
+          </select>
         </div>
 
         <!-- Qty picker (always shown, min=0) -->
@@ -134,7 +129,7 @@ function updateSize(size) {
       </div>
 
       <!-- Added to order confirmation -->
-      <p v-if="isSelected" class="mt-2 text-xs text-success flex items-center gap-1 font-medium">
+      <p v-if="isSelected" class="mt-2 mb-0 text-xs text-success flex items-center gap-1 font-medium">
         <span class="material-icons text-sm">check_circle</span>
         Added to order
       </p>
