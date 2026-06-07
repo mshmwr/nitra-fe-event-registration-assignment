@@ -1,7 +1,8 @@
 <script setup>
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { TICKET_PRICES, formatPrice } from 'src/composables/usePricing.js'
+import { TICKET_PRICES } from 'src/composables/usePricing.js'
+import BaseCard from 'src/components/BaseCard.vue'
 
 const props = defineProps({
   type: { type: String, required: true },
@@ -13,43 +14,55 @@ const emit = defineEmits(['select'])
 const { t, tm } = useI18n()
 
 const label = computed(() => t(`tickets.${props.type}.label`))
+const description = computed(() => t(`tickets.${props.type}.description`))
 const price = computed(() => TICKET_PRICES[props.type] ?? 0)
 const perks = computed(() => tm(`tickets.${props.type}.perks`))
 </script>
 
 <template>
-  <div
+  <BaseCard
     role="radio"
     :aria-checked="selected"
     tabindex="0"
-    class="ticket-card cursor-pointer rounded-xl border-2 p-5 transition-all duration-150 select-none"
-    :class="selected
-      ? 'border-brand-emphasis bg-brand-muted-rest'
-      : 'border-neutral-muted bg-surface-l0 hover:border-neutral-emphasis hover:bg-surface-l1'"
+    :selected="selected"
+    :thick="true"
+    class="ticket-card cursor-pointer rounded-[6px] p-5 flex flex-col gap-3"
+    :class="!selected ? 'border-neutral-muted bg-surface-l1 hover:border-neutral-emphasis hover:bg-surface-l0' : ''"
+    style="box-shadow: 0px 4px 16px 0px rgba(0,0,0,0.08), 0px 1px 3px 0px rgba(0,0,0,0.04)"
     @click="emit('select', type)"
     @keydown.enter.space.prevent="emit('select', type)"
   >
-    <div class="flex items-start justify-between gap-2 mb-3">
-      <div>
-        <p class="text-subtitle1 text-neutral">{{ label }}</p>
-        <p class="text-h3 text-brand mt-0.5">{{ formatPrice(price) }}</p>
-      </div>
-      <div
-        class="w-5 h-5 rounded-full border-2 flex-shrink-0 mt-1 flex items-center justify-center transition-colors"
-        :class="selected ? 'border-[var(--border-brand-emphasis)] bg-[var(--bg-brand-emphasis-rest)]' : 'border-[var(--border-neutral-muted)]'"
-      >
-        <div v-if="selected" class="w-2 h-2 rounded-full bg-white" />
-      </div>
+    <!-- name + price -->
+    <div class="flex items-center justify-between">
+      <span class="text-subtitle1 font-semibold text-neutral">{{ label }}</span>
+      <span class="text-subtitle1 font-semibold text-neutral">${{ price }}</span>
     </div>
-    <ul class="space-y-1">
+
+    <!-- description -->
+    <p class="text-xs text-neutral-muted leading-4">{{ description }}</p>
+
+    <!-- perks -->
+    <ul class="flex flex-col gap-3 list-none p-0 m-0">
       <li
         v-for="(perk, idx) in perks"
         :key="idx"
-        class="flex items-center gap-2 text-sm text-neutral-muted"
+        class="flex items-center gap-2 text-xs text-neutral-muted"
       >
-        <span class="material-icons text-success text-base">check</span>
+        <span class="w-3.5 h-3.5 rounded-full bg-brand-emphasis-rest flex items-center justify-center flex-shrink-0">
+          <span class="material-icons text-white" style="font-size: 9px; line-height: 1">check</span>
+        </span>
         {{ perk }}
       </li>
     </ul>
-  </div>
+
+    <!-- selected badge -->
+    <div v-if="selected">
+      <span
+        class="inline-flex items-center gap-1 px-[5px] py-[3px] rounded-full text-white font-medium leading-[14px]"
+        style="font-size: 11px; background-color: #0d7248"
+      >
+        ✓ {{ t('tickets.selected') }}
+      </span>
+    </div>
+  </BaseCard>
 </template>

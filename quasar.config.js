@@ -27,6 +27,7 @@ export default function () {
 
     framework: {
       config: {},
+      iconSet: 'material-icons',
       plugins: [],
     },
   }

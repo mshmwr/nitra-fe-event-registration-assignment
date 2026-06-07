@@ -7,7 +7,7 @@ import { usePricingInjected, formatPrice } from 'src/composables/usePricing.js'
 const { t } = useI18n()
 
 const state = useRegistration()
-const { ticketPrice, addonLineItems, addonsTotal, total } = usePricingInjected()
+const { ticketPrice, addonLineItems, vipWorkshopDiscount, total } = usePricingInjected()
 
 const ticketLabel = computed(() => t(`tickets.${state.ticketType}.label`))
 </script>
@@ -44,15 +44,19 @@ const ticketLabel = computed(() => t(`tickets.${state.ticketType}.label`))
       {{ t('orderSummary.noAddons') }}
     </p>
 
+    <!-- VIP workshop discount -->
+    <div
+      v-if="vipWorkshopDiscount > 0"
+      class="flex justify-between items-center py-2 border-b divider-muted gap-2"
+    >
+      <span class="text-sm text-neutral-quiet">Workshop discount (VIP 10%)</span>
+      <span class="text-sm font-medium text-success">-{{ formatPrice(vipWorkshopDiscount) }}</span>
+    </div>
+
     <!-- Total -->
     <div class="flex justify-between items-center pt-3 mt-1">
       <span class="text-subtitle2 text-neutral">{{ t('orderSummary.total') }}</span>
       <span class="text-subtitle1 text-brand">{{ formatPrice(total) }}</span>
     </div>
-
-    <p v-if="state.ticketType === 'vip' && addonLineItems.some(i => i.category === 'workshop')" class="mt-2 text-xs text-accent flex items-center gap-1">
-      <span class="material-icons text-sm">local_offer</span>
-      {{ t('orderSummary.vipNote') }}
-    </p>
   </div>
 </template>

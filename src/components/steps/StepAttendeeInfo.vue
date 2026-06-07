@@ -3,6 +3,7 @@ import { useI18n } from 'vue-i18n'
 import { useRegistration } from 'src/composables/useRegistration.js'
 import { TICKET_TYPES } from 'src/composables/usePricing.js'
 import TicketCard from 'src/components/TicketCard.vue'
+import FormField from 'src/components/FormField.vue'
 
 const props = defineProps({
   errors: { type: Object, default: () => ({}) },
@@ -27,8 +28,7 @@ function hasError(field) {
   <div class="step-attendee space-y-8">
     <!-- Ticket type -->
     <section>
-      <h2 class="text-subtitle1 text-neutral mb-1">{{ t('tickets.sectionTitle') }}</h2>
-      <p class="text-sm text-neutral-muted mb-4">{{ t('tickets.sectionHint') }}</p>
+      <h2 class="text-subtitle1 font-semibold text-neutral mb-4">{{ t('tickets.sectionTitle') }}</h2>
       <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
         <TicketCard
           v-for="type in TICKET_TYPES"
@@ -42,65 +42,58 @@ function hasError(field) {
 
     <!-- Personal info -->
     <section>
-      <h2 class="text-subtitle1 text-neutral mb-4">{{ t('attendee.personalInfo') }}</h2>
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <h2 class="text-h3 font-bold text-neutral mb-4">{{ t('attendee.personalInfo') }}</h2>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-5">
 
-        <q-input
+        <FormField
           v-model="state.attendee.name"
           :label="t('attendee.name')"
-          outlined
+          :placeholder="t('attendee.namePlaceholder')"
           :error="hasError('name')"
           :error-message="errors.name"
-          bg-color="white"
         />
 
-        <q-input
+        <FormField
           v-model="state.attendee.email"
-          :label="t('attendee.email')"
           type="email"
-          outlined
+          :label="t('attendee.email')"
+          :placeholder="t('attendee.emailPlaceholder')"
           :error="hasError('email')"
           :error-message="errors.email"
-          bg-color="white"
         />
 
-        <q-input
+        <FormField
           v-model="state.attendee.phone"
-          :label="t('attendee.phone')"
           type="tel"
-          outlined
+          :label="t('attendee.phone')"
+          :placeholder="t('attendee.phonePlaceholder')"
           :error="hasError('phone')"
           :error-message="errors.phone"
-          bg-color="white"
         />
 
-        <q-input
+        <FormField
           v-model="state.attendee.company"
           :label="t('attendee.company')"
-          outlined
+          :placeholder="t('attendee.companyPlaceholder')"
           :error="hasError('company')"
           :error-message="errors.company"
-          bg-color="white"
         />
 
-        <q-input
+        <FormField
           v-model="state.attendee.jobTitle"
           :label="t('attendee.jobTitle')"
-          outlined
+          :placeholder="t('attendee.jobTitlePlaceholder')"
           :error="hasError('jobTitle')"
           :error-message="errors.jobTitle"
-          bg-color="white"
           class="md:col-span-2"
         />
 
-        <q-input
+        <FormField
           v-model="state.attendee.shippingAddress"
           :label="t('attendee.shippingAddress')"
-          :hint="t('attendee.shippingHint')"
-          outlined
+          :placeholder="t('attendee.shippingPlaceholder')"
           :error="hasError('shippingAddress')"
           :error-message="errors.shippingAddress"
-          bg-color="white"
           class="md:col-span-2"
         />
       </div>
