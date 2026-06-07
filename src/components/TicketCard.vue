@@ -59,7 +59,7 @@ const perks = computed(() => tm(`tickets.${props.type}.perks`))
     <div v-if="selected">
       <span
         class="inline-flex items-center gap-1 px-[5px] py-[3px] rounded-full text-white font-medium leading-[14px]"
-        style="font-size: 11px; background-color: #0d7248"
+        style="font-size: 11px; background-color: var(--bg-success-bold-rest)"
       >
         ✓ {{ t('tickets.selected') }}
       </span>
