@@ -173,9 +173,16 @@ watch(() => state.currentStep, (step) => {
 }
 
 .cta-btn {
-  background-color: #fb7429 !important;
+  background-color: var(--bg-accent-emphasis-rest) !important;
   color: white !important;
   border-radius: 10px !important;
   font-weight: 600;
+  transition: background-color 0.15s ease;
+}
+.cta-btn:hover {
+  background-color: var(--bg-accent-emphasis-hover) !important;
+}
+.cta-btn:active {
+  background-color: var(--bg-accent-emphasis-active) !important;
 }
 </style>
