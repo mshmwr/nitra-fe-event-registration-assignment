@@ -48,29 +48,39 @@ export function usePricing(ticketTypeRef, selectedAddonsRef) {
     Object.entries(selectedAddonsRef.value).flatMap(([id, selection]) => {
       const addon = addons.find(a => a.id === id)
       if (!addon) return []
-      const unitPrice = workshopUnitPrice(addon, ticketTypeRef.value === 'vip')
       const quantity = selection.quantity ?? 1
       return [{
         id,
         name: addon.name,
         category: addon.category,
-        unitPrice,
+        unitPrice: addon.price,
         quantity,
-        subtotal: Math.round(unitPrice * quantity * 100) / 100,
+        subtotal: Math.round(addon.price * quantity * 100) / 100,
         size: selection.size ?? null,
       }]
     })
   )
 
+  const vipWorkshopDiscount = computed(() => {
+    if (ticketTypeRef.value !== 'vip') return 0
+    return Math.round(
+      Object.entries(selectedAddonsRef.value).reduce((sum, [id, sel]) => {
+        const addon = addons.find(a => a.id === id)
+        if (!addon || addon.category !== 'workshop') return sum
+        return sum + addon.price * (sel.quantity ?? 1) * 0.1
+      }, 0) * 100
+    ) / 100
+  })
+
   const addonsTotal = computed(() =>
-    Math.round(addonLineItems.value.reduce((sum, item) => sum + item.subtotal, 0) * 100) / 100
+    Math.round((addonLineItems.value.reduce((sum, item) => sum + item.subtotal, 0) - vipWorkshopDiscount.value) * 100) / 100
   )
 
   const total = computed(() =>
     Math.round((ticketPrice.value + addonsTotal.value) * 100) / 100
   )
 
-  return { ticketPrice, addonLineItems, addonsTotal, total }
+  return { ticketPrice, addonLineItems, vipWorkshopDiscount, addonsTotal, total }
 }
 
 /**

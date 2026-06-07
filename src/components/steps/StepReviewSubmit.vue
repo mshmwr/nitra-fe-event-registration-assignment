@@ -4,11 +4,13 @@ import { useI18n } from 'vue-i18n'
 import { useRegistration } from 'src/composables/useRegistration.js'
 import { usePricingInjected, formatPrice } from 'src/composables/usePricing.js'
 import { sessions } from 'src/mocks/sessions.js'
+import ReviewSection from 'src/components/ReviewSection.vue'
+import ReviewRow from 'src/components/ReviewRow.vue'
 
 const props = defineProps({
-  stepHasErrors: { type: Object, default: () => ({}) },
-  step3Errors: { type: Object, default: () => ({}) },
-  showErrors: { type: Boolean, default: false },
+  stepHasErrors: { type: Object, required: true },
+  step3Errors: { type: Object, required: true },
+  showErrors: { type: Boolean, required: true },
 })
 
 const emit = defineEmits(['goto-step', 'submit'])
@@ -16,35 +18,37 @@ const emit = defineEmits(['goto-step', 'submit'])
 const { t, locale } = useI18n()
 
 const state = useRegistration()
-const { ticketPrice, addonLineItems, total } = usePricingInjected()
+const { ticketPrice, addonLineItems, vipWorkshopDiscount, total } = usePricingInjected()
 
 const ticketLabel = computed(() => t(`tickets.${state.ticketType}.label`))
+const ticketDisplay = computed(() => `${ticketLabel.value} (${formatPrice(ticketPrice.value)})`)
 
 const selectedSessions = computed(() =>
   sessions.filter(s => state.selectedSessionIds.includes(s.id))
     .sort((a, b) => new Date(a.date) - new Date(b.date))
 )
 
-function formatTime(iso) {
-  return new Date(iso).toLocaleTimeString(locale.value, { hour: 'numeric', minute: '2-digit', timeZone: 'UTC' })
+function formatDateTime(iso) {
+  const d = new Date(iso)
+  const date = d.toLocaleDateString(locale.value, { month: 'short', day: 'numeric', timeZone: 'UTC' })
+  const time = d.toLocaleTimeString(locale.value, { hour: 'numeric', minute: '2-digit', timeZone: 'UTC' })
+  return `${date}, ${time}`
 }
 
-function formatDate(iso) {
-  return new Date(iso).toLocaleDateString(locale.value, { month: 'long', day: 'numeric', timeZone: 'UTC' })
+function categoryLabel(cat) {
+  const map = { workshop: 'Workshop', meal: 'Meal Package', merchandise: 'Merchandise' }
+  return map[cat] ?? cat
 }
 </script>
 
 <template>
   <div class="step-review space-y-6">
-    <div>
-      <h2 class="text-subtitle1 text-neutral mb-1">{{ t('review.title') }}</h2>
-      <p class="text-sm text-neutral-muted">{{ t('review.hint') }}</p>
-    </div>
+    <h2 class="text-2xl font-semibold text-neutral">{{ t('review.title') }}</h2>
 
     <!-- Validation error summary -->
     <div
       v-if="showErrors && (stepHasErrors[1] || stepHasErrors[2] || stepHasErrors[3])"
-      class="p-4 rounded-lg bg-danger-muted-rest border border-danger-muted space-y-2"
+      class="p-4 rounded-md bg-danger-muted-rest border border-danger-muted space-y-2"
     >
       <div class="flex items-center gap-2 text-danger font-medium text-sm">
         <span class="material-icons text-base">error_outline</span>
@@ -52,164 +56,112 @@ function formatDate(iso) {
       </div>
       <ul class="space-y-1 pl-6">
         <li v-if="stepHasErrors[1]" class="text-sm text-danger">
-          <button type="button" class="underline hover:no-underline" @click="emit('goto-step', 1)">
+          <button type="button" class="underline hover:no-underline border-0 bg-transparent p-0 cursor-pointer" @click="emit('goto-step', 1)">
             {{ t('review.errorStep1') }}
           </button>
         </li>
         <li v-if="stepHasErrors[2]" class="text-sm text-danger">
-          <button type="button" class="underline hover:no-underline" @click="emit('goto-step', 2)">
+          <button type="button" class="underline hover:no-underline border-0 bg-transparent p-0 cursor-pointer" @click="emit('goto-step', 2)">
             {{ t('review.errorStep2') }}
           </button>
         </li>
         <li v-if="stepHasErrors[3]" class="text-sm text-danger">
-          <button type="button" class="underline hover:no-underline" @click="emit('goto-step', 3)">
-            {{ step3Errors.workshopConflicts
-              ? t('review.errorStep3Workshop')
-              : t('review.errorStep3Shipping') }}
+          <button type="button" class="underline hover:no-underline border-0 bg-transparent p-0 cursor-pointer" @click="emit('goto-step', 3)">
+            {{ step3Errors.workshopConflicts ? t('review.errorStep3Workshop') : t('review.errorStep3Shipping') }}
           </button>
         </li>
       </ul>
     </div>
 
-    <!-- Step 1: Attendee Info -->
-    <section class="rounded-xl border border-neutral-muted bg-surface-l1 overflow-hidden">
-      <div class="flex items-center justify-between px-5 py-3 bg-surface-l2 border-b divider-default">
-        <h3 class="text-subtitle2 text-neutral flex items-center gap-2">
-          <span v-if="stepHasErrors[1] && showErrors" class="material-icons text-danger text-base">error</span>
-          {{ t('review.sectionAttendee') }}
-        </h3>
-        <button type="button" class="text-sm text-brand hover:text-brand-emphasis" @click="emit('goto-step', 1)">
-          {{ t('review.edit') }}
-        </button>
-      </div>
-      <div class="p-5 grid grid-cols-1 sm:grid-cols-2 gap-3">
-        <div>
-          <p class="text-xs text-neutral-quiet mb-0.5">{{ t('review.fieldTicket') }}</p>
-          <p class="text-sm text-neutral font-medium">{{ ticketLabel }}</p>
-        </div>
-        <div>
-          <p class="text-xs text-neutral-quiet mb-0.5">{{ t('review.fieldName') }}</p>
-          <p class="text-sm text-neutral">{{ state.attendee.name || '—' }}</p>
-        </div>
-        <div>
-          <p class="text-xs text-neutral-quiet mb-0.5">{{ t('review.fieldEmail') }}</p>
-          <p class="text-sm text-neutral">{{ state.attendee.email || '—' }}</p>
-        </div>
-        <div>
-          <p class="text-xs text-neutral-quiet mb-0.5">{{ t('review.fieldPhone') }}</p>
-          <p class="text-sm text-neutral">{{ state.attendee.phone || '—' }}</p>
-        </div>
-        <div>
-          <p class="text-xs text-neutral-quiet mb-0.5">{{ t('review.fieldCompany') }}</p>
-          <p class="text-sm text-neutral">{{ state.attendee.company || '—' }}</p>
-        </div>
-        <div>
-          <p class="text-xs text-neutral-quiet mb-0.5">{{ t('review.fieldJobTitle') }}</p>
-          <p class="text-sm text-neutral">{{ state.attendee.jobTitle || '—' }}</p>
-        </div>
-        <div v-if="state.attendee.shippingAddress" class="sm:col-span-2">
-          <p class="text-xs text-neutral-quiet mb-0.5">{{ t('review.fieldShipping') }}</p>
-          <p class="text-sm text-neutral">{{ state.attendee.shippingAddress }}</p>
-        </div>
-      </div>
-    </section>
+    <!-- Attendee Information -->
+    <ReviewSection
+      :title="t('review.sectionAttendee')"
+      :step="1"
+      :has-error="stepHasErrors[1]"
+      :show-errors="showErrors"
+      @edit="emit('goto-step', 1)"
+    >
+      <ReviewRow :label="t('review.fieldName')" :value="state.attendee.name" />
+      <ReviewRow :label="t('review.fieldEmail')" :value="state.attendee.email" />
+      <ReviewRow :label="t('review.fieldPhone')" :value="state.attendee.phone" />
+      <ReviewRow :label="t('review.fieldCompany')" :value="state.attendee.company" />
+      <ReviewRow :label="t('review.fieldJobTitle')" :value="state.attendee.jobTitle" />
+      <ReviewRow :label="t('review.fieldTicket')" :value="ticketDisplay" />
+      <ReviewRow v-if="state.attendee.shippingAddress" :label="t('review.fieldShipping')" :value="state.attendee.shippingAddress" />
+    </ReviewSection>
 
-    <!-- Step 2: Sessions -->
-    <section class="rounded-xl border border-neutral-muted bg-surface-l1 overflow-hidden">
-      <div class="flex items-center justify-between px-5 py-3 bg-surface-l2 border-b divider-default">
-        <h3 class="text-subtitle2 text-neutral flex items-center gap-2">
-          <span v-if="stepHasErrors[2] && showErrors" class="material-icons text-danger text-base">error</span>
-          {{ t('review.sectionSessions', { count: selectedSessions.length }) }}
-        </h3>
-        <button type="button" class="text-sm text-brand hover:text-brand-emphasis" @click="emit('goto-step', 2)">
-          {{ t('review.edit') }}
-        </button>
-      </div>
-      <div class="p-5">
-        <p v-if="selectedSessions.length === 0" class="text-sm text-neutral-quiet">{{ t('review.noSessions') }}</p>
-        <ul v-else class="space-y-2">
-          <li
-            v-for="s in selectedSessions"
-            :key="s.id"
-            class="flex items-start gap-2 text-sm text-neutral"
-          >
-            <span class="material-icons text-success text-base flex-shrink-0 mt-0.5">event</span>
-            <div>
-              <p class="font-medium">{{ s.title }}</p>
-              <p class="text-neutral-muted text-xs">
-                {{ formatDate(s.date) }} · {{ formatTime(s.date) }} – {{ formatTime(s.endDate) }}
-              </p>
-            </div>
-          </li>
-        </ul>
-      </div>
-    </section>
+    <!-- Selected Sessions -->
+    <ReviewSection
+      :title="t('review.sectionSessions')"
+      :step="2"
+      :has-error="stepHasErrors[2]"
+      :show-errors="showErrors"
+      @edit="emit('goto-step', 2)"
+    >
+      <p v-if="selectedSessions.length === 0" class="text-sm text-neutral-quiet">{{ t('review.noSessions') }}</p>
+      <ReviewRow
+        v-for="s in selectedSessions"
+        :key="s.id"
+        :label="formatDateTime(s.date)"
+        :value="s.title"
+      />
+    </ReviewSection>
 
-    <!-- Step 3: Add-ons -->
-    <section class="rounded-xl border border-neutral-muted bg-surface-l1 overflow-hidden">
-      <div class="flex items-center justify-between px-5 py-3 bg-surface-l2 border-b divider-default">
-        <h3 class="text-subtitle2 text-neutral flex items-center gap-2">
-          <span v-if="stepHasErrors[3] && showErrors" class="material-icons text-danger text-base">error</span>
-          {{ t('review.sectionAddons', { count: addonLineItems.length }) }}
-        </h3>
-        <button type="button" class="text-sm text-brand hover:text-brand-emphasis" @click="emit('goto-step', 3)">
-          {{ t('review.edit') }}
-        </button>
-      </div>
-      <div class="p-5">
-        <p v-if="addonLineItems.length === 0" class="text-sm text-neutral-quiet">{{ t('review.noAddons') }}</p>
-        <ul v-else class="space-y-1">
-          <li
-            v-for="item in addonLineItems"
-            :key="item.id"
-            class="flex justify-between items-baseline gap-2 text-sm"
-          >
-            <span class="text-neutral min-w-0">
-              {{ item.name }}
-              <span v-if="item.size" class="text-neutral-muted text-xs">({{ item.size }})</span>
-              <span v-if="item.quantity > 1" class="text-neutral-muted text-xs"> × {{ item.quantity }}</span>
-            </span>
-            <span class="text-neutral font-medium flex-shrink-0 whitespace-nowrap">{{ formatPrice(item.subtotal) }}</span>
-          </li>
-        </ul>
-      </div>
-    </section>
+    <!-- Add-ons -->
+    <ReviewSection
+      :title="t('review.sectionAddons')"
+      :step="3"
+      :has-error="stepHasErrors[3]"
+      :show-errors="showErrors"
+      @edit="emit('goto-step', 3)"
+    >
+      <p v-if="addonLineItems.length === 0" class="text-sm text-neutral-quiet">{{ t('review.noAddons') }}</p>
+      <ReviewRow
+        v-for="item in addonLineItems"
+        :key="item.id"
+        :label="categoryLabel(item.category)"
+        :value="`${item.name} (${formatPrice(item.unitPrice)})`"
+      />
+    </ReviewSection>
 
-    <!-- Pricing breakdown -->
-    <section class="rounded-xl border border-neutral-muted bg-surface-l1 overflow-hidden">
-      <div class="px-5 py-3 bg-surface-l2 border-b divider-default">
-        <h3 class="text-subtitle2 text-neutral">{{ t('review.sectionPricing') }}</h3>
+    <!-- Pricing Summary (no edit link) -->
+    <ReviewSection
+      :title="t('review.sectionPricing')"
+      :step="0"
+      :has-error="false"
+      :show-errors="false"
+    >
+      <ReviewRow :label="t('review.ticketLine', { label: ticketLabel })" :value="formatPrice(ticketPrice)" />
+      <ReviewRow
+        v-for="item in addonLineItems"
+        :key="item.id"
+        :label="item.quantity > 1 ? `${item.name} × ${item.quantity}` : item.name"
+        :value="formatPrice(item.subtotal)"
+      />
+      <div
+        v-if="vipWorkshopDiscount > 0"
+        class="flex justify-between gap-4"
+        style="font-size: 11px; color: rgba(38,77,79,1);"
+      >
+        <span>{{ t('orderSummary.vipNote') }}</span>
+        <span class="flex-shrink-0">-{{ formatPrice(vipWorkshopDiscount) }}</span>
       </div>
-      <div class="p-5 space-y-2">
-        <div class="flex justify-between text-sm">
-          <span class="text-neutral-muted">{{ t('review.ticketLine', { label: ticketLabel }) }}</span>
-          <span class="text-neutral">{{ formatPrice(ticketPrice) }}</span>
-        </div>
-        <div
-          v-for="item in addonLineItems"
-          :key="item.id"
-          class="flex justify-between gap-2 text-sm"
-        >
-          <span class="text-neutral-muted min-w-0">{{ item.name }}<span v-if="item.quantity > 1"> × {{ item.quantity }}</span></span>
-          <span class="text-neutral flex-shrink-0 whitespace-nowrap">{{ formatPrice(item.subtotal) }}</span>
-        </div>
-        <div class="border-t divider-default pt-2 flex justify-between font-medium">
-          <span class="text-neutral">{{ t('review.total') }}</span>
-          <span class="text-brand text-subtitle1">{{ formatPrice(total) }}</span>
-        </div>
+      <div class="border-t border-neutral-muted pt-2 flex justify-between text-sm font-medium">
+        <span class="text-neutral">{{ t('review.total') }}</span>
+        <span class="text-neutral">{{ formatPrice(total) }}</span>
       </div>
-    </section>
+    </ReviewSection>
 
     <!-- Submit -->
     <div class="flex justify-end">
-      <q-btn
-        :label="t('review.submit')"
-        color="primary"
-        unelevated
-        size="md"
-        class="px-8"
+      <button
+        type="button"
+        class="px-6 py-3 rounded-lg text-white text-base font-semibold border-0 cursor-pointer"
+        style="background-color: #fb7429;"
         @click="emit('submit')"
-      />
+      >
+        {{ t('review.submit') }}
+      </button>
     </div>
   </div>
 </template>

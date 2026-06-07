@@ -1,11 +1,12 @@
 <script setup>
-import { computed } from 'vue'
+import { ref, computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRegistration } from 'src/composables/useRegistration.js'
 import { useConflicts } from 'src/composables/useConflicts.js'
 import { addons } from 'src/mocks/addons.js'
 import AddonItem from 'src/components/AddonItem.vue'
 import OrderSummary from 'src/components/OrderSummary.vue'
+import TabSwitcher from 'src/components/TabSwitcher.vue'
 
 const props = defineProps({
   hasMerchandise: { type: Boolean, default: false },
@@ -26,6 +27,12 @@ const categories = [
   { key: 'meal', labelKey: 'addons.categories.meal' },
   { key: 'merchandise', labelKey: 'addons.categories.merchandise' },
 ]
+
+const activeCategory = ref('workshop')
+
+const categoryTabs = computed(() =>
+  categories.map(c => ({ value: c.key, label: t(c.labelKey) }))
+)
 
 const addonsByCategory = computed(() => {
   const map = {}
@@ -54,10 +61,7 @@ function handleAddonUpdate(id, selection) {
     <div class="flex flex-col lg:flex-row gap-6">
       <!-- Main content -->
       <div class="flex-1 min-w-0 space-y-8">
-        <div>
-          <h2 class="text-subtitle1 text-neutral mb-1">{{ t('addons.title') }}</h2>
-          <p class="text-sm text-neutral-muted">{{ t('addons.hint') }}</p>
-        </div>
+        <h2 class="text-h3 font-bold text-neutral">{{ t('addons.title') }}</h2>
 
         <!-- Workshop conflict validation error (shown after submit attempt) -->
         <div
@@ -80,27 +84,27 @@ function handleAddonUpdate(id, selection) {
         <!-- Merchandise shipping banner (informational) -->
         <div
           v-if="hasMerchandise"
-          class="flex items-start gap-3 p-3 rounded-lg bg-info-muted-rest border border-info-muted text-info text-sm"
+          class="p-4 rounded-lg bg-info-muted-rest border border-info-muted text-info text-sm"
         >
-          <span class="material-icons text-base flex-shrink-0 mt-0.5">local_shipping</span>
-          {{ t('addons.shippingBanner') }}
+          <div class="flex items-center gap-2 mb-1">
+            <span class="material-icons text-base">info</span>
+            <span class="font-semibold text-info">Shipping Information</span>
+          </div>
+          <p>{{ t('addons.shippingBanner') }}</p>
         </div>
 
-        <div v-for="cat in categories" :key="cat.key" class="space-y-3">
-          <h3 class="text-sm font-semibold text-neutral-muted uppercase tracking-wide border-b divider-default pb-2">
-            {{ t(cat.labelKey) }}
-          </h3>
-          <div class="space-y-2">
-            <AddonItem
-              v-for="addon in addonsByCategory[cat.key]"
-              :key="addon.id"
-              :addon="addon"
-              :selection="state.selectedAddons[addon.id] ?? null"
-              :is-vip="isVip"
-              :conflicts-with-session="addon.category === 'workshop' && workshopConflictsWithSessions(addon)"
-              @update="handleAddonUpdate"
-            />
-          </div>
+        <TabSwitcher v-model="activeCategory" :tabs="categoryTabs" />
+
+        <div class="space-y-2">
+          <AddonItem
+            v-for="addon in addonsByCategory[activeCategory]"
+            :key="addon.id"
+            :addon="addon"
+            :selection="state.selectedAddons[addon.id] ?? null"
+            :is-vip="isVip"
+            :conflicts-with-session="addon.category === 'workshop' && workshopConflictsWithSessions(addon)"
+            @update="handleAddonUpdate"
+          />
         </div>
       </div>
 

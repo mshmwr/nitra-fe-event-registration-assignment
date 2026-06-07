@@ -15,9 +15,11 @@ function onLocaleChange(value) {
   <q-layout view="hHh lpR fFf">
     <q-header class="bg-surface-l0 border-b divider-default" elevated>
       <q-toolbar class="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between gap-3">
-        <div class="min-w-0">
-          <p class="text-subtitle1 text-neutral leading-none truncate">{{ t('app.title') }}</p>
-          <p class="text-xs text-neutral-muted leading-none mt-0.5 truncate">{{ t('app.subtitle') }}</p>
+        <div class="flex items-center gap-3 min-w-0">
+          <div class="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 overflow-hidden" style="background-color: #264d4f">
+            <span class="text-white font-bold text-lg leading-none">N</span>
+          </div>
+          <p class="text-h6 font-bold text-neutral leading-none truncate">{{ t('app.title') }}</p>
         </div>
         <q-select
           :model-value="locale"

@@ -5,6 +5,7 @@ import { provideRegistration } from 'src/composables/useRegistration.js'
 import { useConflicts } from 'src/composables/useConflicts.js'
 import { useValidation } from 'src/composables/useValidation.js'
 import { providePricing } from 'src/composables/usePricing.js'
+import StepperNav from 'src/components/StepperNav.vue'
 import StepAttendeeInfo from 'src/components/steps/StepAttendeeInfo.vue'
 import StepSessionSelection from 'src/components/steps/StepSessionSelection.vue'
 import StepAddons from 'src/components/steps/StepAddons.vue'
@@ -22,17 +23,15 @@ const { step1Errors, step2Errors, step3Errors, stepHasErrors, isValid, hasMercha
 const ticketTypeRef = computed(() => state.ticketType)
 providePricing(ticketTypeRef, selectedAddonsRef)
 
-const STEPS = [
-  { number: 1, labelKey: 'nav.steps.attendee', icon: 'person' },
-  { number: 2, labelKey: 'nav.steps.sessions', icon: 'event' },
-  { number: 3, labelKey: 'nav.steps.addons', icon: 'shopping_cart' },
-  { number: 4, labelKey: 'nav.steps.review', icon: 'check_circle' },
-]
-
 const currentStep = computed(() => state.currentStep)
 
 /** Validation errors shown only after first submit attempt */
 const showErrors = computed(() => state.validationTriggered)
+
+const nextLabel = computed(() => {
+  const labels = { 1: t('nav.nextSessions'), 2: t('nav.nextAddons'), 3: t('nav.nextReview') }
+  return labels[currentStep.value] ?? t('nav.continue')
+})
 
 function goTo(step) {
   state.currentStep = step
@@ -52,18 +51,6 @@ function submit() {
   state.submitted = true
 }
 
-/**
- * Step header status for a given step number.
- * @param {number} n
- * @returns {'active'|'done'|'error'|'pending'}
- */
-function stepStatus(n) {
-  if (n === currentStep.value) return 'active'
-  if (n < currentStep.value) {
-    return (showErrors.value && stepHasErrors.value[n]) ? 'error' : 'done'
-  }
-  return (showErrors.value && stepHasErrors.value[n]) ? 'error' : 'pending'
-}
 </script>
 
 <template>
@@ -86,54 +73,12 @@ function stepStatus(n) {
       <!-- Wizard -->
       <div v-else class="space-y-6">
         <!-- Step header -->
-        <nav class="flex items-center gap-0" :aria-label="t('nav.ariaSteps')">
-          <template v-for="(step, idx) in STEPS" :key="step.number">
-            <!-- Step indicator -->
-            <button
-              type="button"
-              class="flex items-center gap-2 py-2 px-2 sm:px-3 rounded-lg transition-colors group min-w-0 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2"
-              :class="{
-                'cursor-pointer': step.number < currentStep || stepStatus(step.number) === 'done' || stepStatus(step.number) === 'error',
-                'cursor-default': step.number > currentStep && stepStatus(step.number) !== 'done' && stepStatus(step.number) !== 'error',
-              }"
-              :aria-current="step.number === currentStep ? 'step' : undefined"
-              @click="(step.number < currentStep || stepStatus(step.number) === 'done' || stepStatus(step.number) === 'error') && goTo(step.number)"
-            >
-              <div
-                class="w-7 h-7 rounded-full flex items-center justify-center text-sm font-medium flex-shrink-0 transition-colors"
-                :class="{
-                  'bg-brand-emphasis-rest text-white': stepStatus(step.number) === 'active',
-                  'bg-success-muted-rest text-success': stepStatus(step.number) === 'done',
-                  'bg-danger-muted-rest text-danger': stepStatus(step.number) === 'error',
-                  'bg-neutral-muted-rest text-neutral-quiet': stepStatus(step.number) === 'pending',
-                }"
-              >
-                <span v-if="stepStatus(step.number) === 'done'" class="material-icons text-sm">check</span>
-                <span v-else-if="stepStatus(step.number) === 'error'" class="material-icons text-sm">error</span>
-                <span v-else>{{ step.number }}</span>
-              </div>
-              <span
-                class="text-sm font-medium transition-colors truncate"
-                :class="{
-                  'hidden sm:block': step.number !== currentStep,
-                  'text-neutral': stepStatus(step.number) === 'active',
-                  'text-success': stepStatus(step.number) === 'done',
-                  'text-danger': stepStatus(step.number) === 'error',
-                  'text-neutral-quiet': stepStatus(step.number) === 'pending',
-                }"
-              >
-                {{ t(step.labelKey) }}
-              </span>
-            </button>
-
-            <!-- Connector line (except after last step) -->
-            <div
-              v-if="idx < STEPS.length - 1"
-              class="flex-1 h-px mx-1 transition-colors"
-              :class="step.number < currentStep ? 'bg-[var(--bg-success-emphasis-rest)]' : 'bg-[var(--divider-default)]'"
-            />
-          </template>
-        </nav>
+        <StepperNav
+          :current-step="currentStep"
+          :show-errors="showErrors"
+          :step-has-errors="stepHasErrors"
+          @goto="goTo"
+        />
 
         <!-- Step content card -->
         <div class="bg-surface-l0 rounded-2xl border border-neutral-muted p-6 md:p-8">
@@ -171,22 +116,23 @@ function stepStatus(n) {
 
         <!-- Navigation buttons -->
         <div class="flex items-center justify-between">
-          <q-btn
+          <button
             v-if="currentStep > 1"
-            flat
-            :label="t('nav.back')"
-            icon="arrow_back"
-            color="primary"
+            type="button"
+            class="flex items-center gap-1.5 px-4 py-2.5 rounded-[10px] bg-neutral-muted-rest text-sm font-semibold text-neutral-muted transition-colors hover:bg-neutral-muted"
             @click="back"
-          />
+          >
+            <span class="material-icons text-base">arrow_back</span>
+            {{ t('nav.back') }}
+          </button>
           <span v-else />
 
           <q-btn
             v-if="currentStep < 4"
-            :label="t('nav.continue')"
-            icon-right="arrow_forward"
-            color="primary"
+            :label="nextLabel"
+            no-caps
             unelevated
+            class="cta-btn"
             @click="next"
           />
         </div>
@@ -216,5 +162,12 @@ function stepStatus(n) {
 .slide-leave-to {
   opacity: 0;
   transform: translateX(-16px);
+}
+
+.cta-btn {
+  background-color: #fb7429 !important;
+  color: white !important;
+  border-radius: 10px !important;
+  font-weight: 600;
 }
 </style>
