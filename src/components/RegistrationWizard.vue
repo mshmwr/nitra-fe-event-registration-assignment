@@ -52,6 +52,7 @@ function submit() {
 
 watch(() => state.currentStep, (step) => {
   if (step === 4) state.validationTriggered = true
+  window.scrollTo({ top: 0, behavior: 'smooth' })
 })
 
 </script>
