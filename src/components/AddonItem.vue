@@ -3,7 +3,7 @@ import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import BaseCard from 'src/components/BaseCard.vue'
 import QuantityPicker from 'src/components/QuantityPicker.vue'
-import { formatPrice } from 'src/composables/usePricing.js'
+import { workshopUnitPrice, formatPrice } from 'src/composables/usePricing.js'
 
 const props = defineProps({
   addon: { type: Object, required: true },
@@ -27,6 +27,9 @@ const remaining = computed(() => {
   if (props.addon.capacity == null) return null
   return props.addon.capacity - props.addon.registered
 })
+
+const effectivePrice = computed(() => workshopUnitPrice(props.addon, props.isVip))
+const hasVipDiscount = computed(() => props.isVip && props.addon.category === 'workshop')
 
 function formatTimeRange(start, end) {
   const opts = { hour: 'numeric', minute: '2-digit', timeZone: 'UTC' }
@@ -78,7 +81,13 @@ function updateSize(size) {
     <!-- Name + price -->
     <div class="flex items-start justify-between gap-3">
       <span class="text-subtitle2 text-neutral">{{ addon.name }}</span>
-      <span class="text-subtitle2 text-neutral flex-shrink-0">{{ formatPrice(addon.price) }}</span>
+      <div class="flex flex-col items-end flex-shrink-0">
+        <span class="text-subtitle2 text-neutral">{{ formatPrice(effectivePrice) }}</span>
+        <template v-if="hasVipDiscount">
+          <span class="text-xs text-neutral-muted line-through">{{ formatPrice(addon.price) }}</span>
+          <span class="text-xs text-success font-medium">{{ t('addons.vipDiscount') }}</span>
+        </template>
+      </div>
     </div>
 
     <!-- Description -->
