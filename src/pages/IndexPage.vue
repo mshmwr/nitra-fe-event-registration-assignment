@@ -35,7 +35,7 @@ function onLocaleChange(value) {
     <q-header class="bg-surface-l0" style="border-bottom: 1px solid var(--divider-default);">
       <q-toolbar class="max-w-6xl mx-auto px-[120px] py-3 flex items-center justify-between gap-3">
         <div class="flex items-center gap-3 min-w-0">
-          <div class="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 overflow-hidden" style="background-color: #264d4f">
+          <div class="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 overflow-hidden" style="background-color: var(--bg-brand-emphasis-rest)">
             <span class="text-white font-bold text-lg leading-none">N</span>
           </div>
           <p class="text-h6 font-bold text-neutral leading-none truncate">{{ t('app.title') }}</p>
