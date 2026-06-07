@@ -15,6 +15,7 @@ const PHONE_RE = /^\+?(?=.*\d)[\d\s\-().]{7,20}$/
 export function useValidation(state, conflictingSessionIds, conflictingWorkshopIds = null) {
   const { t } = useI18n()
 
+  /** @type {import('vue').ComputedRef<boolean>} */
   const hasMerchandise = computed(() =>
     Object.keys(state.selectedAddons).some(id => {
       const addon = addons.find(a => a.id === id)
@@ -68,6 +69,7 @@ export function useValidation(state, conflictingSessionIds, conflictingWorkshopI
     4: false,
   }))
 
+  /** @type {import('vue').ComputedRef<boolean>} */
   const isValid = computed(() =>
     !hasStep1Errors.value && !hasStep2Errors.value && !hasStep3Errors.value
   )
