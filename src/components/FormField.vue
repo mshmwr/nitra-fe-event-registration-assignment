@@ -6,6 +6,7 @@ defineProps({
   placeholder: { type: String, default: '' },
   error: { type: Boolean, default: false },
   errorMessage: { type: String, default: '' },
+  required: { type: Boolean, default: false },
 })
 
 defineEmits(['update:modelValue'])
@@ -13,7 +14,7 @@ defineEmits(['update:modelValue'])
 
 <template>
   <div class="flex flex-col gap-1.5">
-    <label class="text-xs font-medium text-neutral-muted">{{ label }}</label>
+    <label class="text-xs font-medium" :class="required ? 'text-danger' : 'text-neutral-muted'">{{ label }}</label>
     <input
       :value="modelValue"
       :type="type"

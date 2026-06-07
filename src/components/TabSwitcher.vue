@@ -12,10 +12,10 @@ defineEmits(['update:modelValue'])
       v-for="tab in tabs"
       :key="tab.value"
       type="button"
-      class="px-5 py-2 rounded-[8px] text-[13px] transition-colors whitespace-nowrap"
+      class="px-5 py-2 rounded-[8px] text-[13px] transition-colors whitespace-nowrap border-0 outline-none cursor-pointer"
       :class="modelValue === tab.value
-        ? 'bg-[var(--bg-brand-emphasis-rest)] text-white font-semibold'
-        : 'text-neutral-muted font-medium'"
+        ? 'bg-brand-emphasis-rest text-white font-semibold'
+        : 'bg-transparent text-neutral-muted font-medium'"
       @click="$emit('update:modelValue', tab.value)"
     >
       {{ tab.label }}

@@ -11,15 +11,16 @@ defineProps({
   <div
     class="transition-all duration-150 select-none"
     :class="[
-      thick ? 'border-2' : 'border',
+      (thick || selected) ? 'border-2 border-solid' : 'border',
       disabled
         ? 'opacity-50 border-neutral-quiet bg-surface-l1'
         : error
           ? 'border-danger-emphasis bg-danger-muted-rest'
           : selected
-            ? 'border-brand-emphasis bg-brand-muted-rest'
+            ? 'bg-brand-subtle-rest'
             : '',
     ]"
+    :style="selected && !disabled && !error ? { borderColor: 'var(--border-brand-emphasis)' } : {}"
   >
     <slot />
   </div>

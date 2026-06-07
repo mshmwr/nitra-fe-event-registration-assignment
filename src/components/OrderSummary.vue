@@ -3,6 +3,7 @@ import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRegistration } from 'src/composables/useRegistration.js'
 import { usePricingInjected, formatPrice } from 'src/composables/usePricing.js'
+import Divider from 'src/components/Divider.vue'
 
 const { t } = useI18n()
 
@@ -13,7 +14,7 @@ const ticketLabel = computed(() => t(`tickets.${state.ticketType}.label`))
 </script>
 
 <template>
-  <div class="order-summary rounded-xl border border-neutral-muted bg-surface-l1 p-5 sticky top-4">
+  <div class="order-summary rounded-md border border-solid bg-surface-l1 p-5 sticky top-4" :style="{ borderColor: 'var(--border-neutral-muted)' }">
     <h3 class="text-subtitle1 text-neutral mb-4">{{ t('orderSummary.title') }}</h3>
 
     <!-- Ticket -->
@@ -26,13 +27,9 @@ const ticketLabel = computed(() => t(`tickets.${state.ticketType}.label`))
     <div
       v-for="item in addonLineItems"
       :key="item.id"
-      class="flex justify-between items-start py-2 border-b divider-muted gap-2"
+      class="flex justify-between items-center py-2 border-b divider-muted gap-2"
     >
-      <div class="flex-1 min-w-0">
-        <p class="text-sm text-neutral truncate">{{ item.name }}</p>
-        <p v-if="item.size" class="text-xs text-neutral-quiet">{{ t('orderSummary.size', { size: item.size }) }}</p>
-        <p v-if="item.quantity > 1" class="text-xs text-neutral-quiet">× {{ item.quantity }}</p>
-      </div>
+      <p class="text-sm text-neutral truncate flex-1 min-w-0">{{ item.name }} × {{ item.quantity }}</p>
       <span class="text-sm font-medium text-neutral flex-shrink-0">{{ formatPrice(item.subtotal) }}</span>
     </div>
 
@@ -54,7 +51,8 @@ const ticketLabel = computed(() => t(`tickets.${state.ticketType}.label`))
     </div>
 
     <!-- Total -->
-    <div class="flex justify-between items-center pt-3 mt-1">
+    <Divider class="mt-1" />
+    <div class="flex justify-between items-center pt-3">
       <span class="text-subtitle2 text-neutral">{{ t('orderSummary.total') }}</span>
       <span class="text-subtitle1 text-brand">{{ formatPrice(total) }}</span>
     </div>

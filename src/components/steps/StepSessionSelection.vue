@@ -57,14 +57,14 @@ function toggleSession(id) {
 
 <template>
   <div class="step-sessions space-y-6">
-    <div>
-      <h2 class="text-h3 font-bold text-neutral mb-2">{{ t('sessions.title') }}</h2>
+    <h2 class="text-h3 font-bold text-neutral">{{ t('sessions.title') }}</h2>
+
+    <div class="space-y-3">
+      <TabSwitcher v-model="activeDate" :tabs="dateTabs" />
       <p class="text-sm font-medium text-[var(--text-brand-emphasis)]">
         {{ t('sessions.selected', { count: state.selectedSessionIds.length }) }}
       </p>
     </div>
-
-    <TabSwitcher v-model="activeDate" :tabs="dateTabs" />
 
     <div
       v-if="showErrors && errors.conflicts"

@@ -8,6 +8,7 @@ import FormField from 'src/components/FormField.vue'
 const props = defineProps({
   errors: { type: Object, default: () => ({}) },
   showErrors: { type: Boolean, default: false },
+  hasMerchandise: { type: Boolean, default: false },
 })
 
 const { t } = useI18n()
@@ -90,10 +91,11 @@ function hasError(field) {
 
         <FormField
           v-model="state.attendee.shippingAddress"
-          :label="t('attendee.shippingAddress')"
+          :label="hasMerchandise ? t('attendee.shippingAddressRequired') : t('attendee.shippingAddress')"
           :placeholder="t('attendee.shippingPlaceholder')"
           :error="hasError('shippingAddress')"
           :error-message="errors.shippingAddress"
+          :required="hasMerchandise"
           class="md:col-span-2"
         />
       </div>

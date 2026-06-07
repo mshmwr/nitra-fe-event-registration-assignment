@@ -1,19 +1,19 @@
 <script setup>
-import { computed } from 'vue'
+import { computed, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { provideRegistration } from 'src/composables/useRegistration.js'
+import { useRegistration } from 'src/composables/useRegistration.js'
 import { useConflicts } from 'src/composables/useConflicts.js'
 import { useValidation } from 'src/composables/useValidation.js'
 import { providePricing } from 'src/composables/usePricing.js'
-import StepperNav from 'src/components/StepperNav.vue'
 import StepAttendeeInfo from 'src/components/steps/StepAttendeeInfo.vue'
 import StepSessionSelection from 'src/components/steps/StepSessionSelection.vue'
 import StepAddons from 'src/components/steps/StepAddons.vue'
 import StepReviewSubmit from 'src/components/steps/StepReviewSubmit.vue'
+import Divider from 'src/components/Divider.vue'
 
 const { t } = useI18n()
 
-const state = provideRegistration()
+const state = useRegistration()
 
 const selectedSessionIdsRef = computed(() => state.selectedSessionIds)
 const selectedAddonsRef = computed(() => state.selectedAddons)
@@ -25,7 +25,6 @@ providePricing(ticketTypeRef, selectedAddonsRef)
 
 const currentStep = computed(() => state.currentStep)
 
-/** Validation errors shown only after first submit attempt */
 const showErrors = computed(() => state.validationTriggered)
 
 const nextLabel = computed(() => {
@@ -51,10 +50,14 @@ function submit() {
   state.submitted = true
 }
 
+watch(() => state.currentStep, (step) => {
+  if (step === 4) state.validationTriggered = true
+})
+
 </script>
 
 <template>
-  <div class="registration-wizard max-w-4xl mx-auto">
+  <div class="registration-wizard">
 
     <!-- Success screen -->
     <Transition name="fade" mode="out-in">
@@ -71,58 +74,53 @@ function submit() {
       </div>
 
       <!-- Wizard -->
-      <div v-else class="space-y-6">
-        <!-- Step header -->
-        <StepperNav
-          :current-step="currentStep"
-          :show-errors="showErrors"
-          :step-has-errors="stepHasErrors"
-          @goto="goTo"
-        />
-
-        <!-- Step content card -->
-        <div class="bg-surface-l0 rounded-2xl border border-neutral-muted p-6 md:p-8">
-          <Transition name="slide" mode="out-in">
-            <StepAttendeeInfo
-              v-if="currentStep === 1"
-              :key="1"
-              :errors="step1Errors"
-              :show-errors="showErrors"
-            />
-            <StepSessionSelection
-              v-else-if="currentStep === 2"
-              :key="2"
-              :errors="step2Errors"
-              :show-errors="showErrors"
-            />
-            <StepAddons
-              v-else-if="currentStep === 3"
-              :key="3"
-              :has-merchandise="hasMerchandise"
-              :step3-errors="step3Errors"
-              :show-errors="showErrors"
-            />
-            <StepReviewSubmit
-              v-else-if="currentStep === 4"
-              :key="4"
-              :step-has-errors="stepHasErrors"
-              :step3-errors="step3Errors"
-              :show-errors="showErrors"
-              @goto-step="goTo"
-              @submit="submit"
-            />
-          </Transition>
-        </div>
+      <div v-else class="space-y-2">
+        <!-- Step content -->
+        <Transition name="slide" mode="out-in">
+          <StepAttendeeInfo
+            v-if="currentStep === 1"
+            :key="1"
+            :errors="step1Errors"
+            :show-errors="showErrors"
+            :has-merchandise="hasMerchandise"
+          />
+          <StepSessionSelection
+            v-else-if="currentStep === 2"
+            :key="2"
+            :errors="step2Errors"
+            :show-errors="showErrors"
+          />
+          <StepAddons
+            v-else-if="currentStep === 3"
+            :key="3"
+            :has-merchandise="hasMerchandise"
+            :step3-errors="step3Errors"
+            :show-errors="showErrors"
+          />
+          <StepReviewSubmit
+            v-else-if="currentStep === 4"
+            :key="4"
+            :step-has-errors="stepHasErrors"
+            :step1-errors="step1Errors"
+            :step2-errors="step2Errors"
+            :step3-errors="step3Errors"
+            :show-errors="showErrors"
+            @goto-step="goTo"
+            @submit="submit"
+          />
+        </Transition>
 
         <!-- Navigation buttons -->
-        <div class="flex items-center justify-between">
+        <div style="width: 100vw; margin-left: calc(50% - 50vw); margin-top: 40px;">
+          <Divider />
+        </div>
+        <div class="flex items-center justify-between pt-4">
           <button
             v-if="currentStep > 1"
             type="button"
-            class="flex items-center gap-1.5 px-4 py-2.5 rounded-[10px] bg-neutral-muted-rest text-sm font-semibold text-neutral-muted transition-colors hover:bg-neutral-muted"
+            class="px-4 py-2.5 rounded-[10px] border-0 bg-neutral-muted-rest text-sm font-semibold text-neutral-muted transition-colors hover:bg-neutral-muted cursor-pointer"
             @click="back"
           >
-            <span class="material-icons text-base">arrow_back</span>
             {{ t('nav.back') }}
           </button>
           <span v-else />
@@ -130,10 +128,20 @@ function submit() {
           <q-btn
             v-if="currentStep < 4"
             :label="nextLabel"
+            :disable="currentStep === 2 && !!step2Errors.conflicts"
             no-caps
             unelevated
             class="cta-btn"
             @click="next"
+          />
+          <q-btn
+            v-else
+            :label="t('review.submit')"
+            :disable="showErrors && !isValid"
+            no-caps
+            unelevated
+            class="cta-btn"
+            @click="submit"
           />
         </div>
       </div>

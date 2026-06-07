@@ -72,25 +72,17 @@ function handleAddonUpdate(id, selection) {
           {{ step3Errors.workshopConflicts }}
         </div>
 
-        <!-- Shipping address validation error (shown after submit attempt) -->
-        <div
-          v-if="showErrors && step3Errors.shippingAddress"
-          class="flex items-start gap-3 p-3 rounded-lg bg-danger-muted-rest border border-danger-muted text-danger text-sm"
-        >
-          <span class="material-icons text-base flex-shrink-0 mt-0.5">error_outline</span>
-          {{ step3Errors.shippingAddress }}
-        </div>
-
         <!-- Merchandise shipping banner (informational) -->
         <div
           v-if="hasMerchandise"
-          class="p-4 rounded-lg bg-info-muted-rest border border-info-muted text-info text-sm"
+          class="p-4 rounded-lg bg-info-subtle-rest border border-solid text-sm"
+          :style="{ borderColor: 'var(--border-info-opacity)' }"
         >
           <div class="flex items-center gap-2 mb-1">
-            <span class="material-icons text-base">info</span>
-            <span class="font-semibold text-info">Shipping Information</span>
+            <span class="material-icons text-base text-info">info</span>
+            <span class="font-semibold text-neutral">Shipping Information</span>
           </div>
-          <p>{{ t('addons.shippingBanner') }}</p>
+          <p class="text-neutral-muted">{{ t('addons.shippingBanner') }}</p>
         </div>
 
         <TabSwitcher v-model="activeCategory" :tabs="categoryTabs" />
