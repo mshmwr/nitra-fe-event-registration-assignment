@@ -6,6 +6,7 @@ import { usePricingInjected, formatPrice } from 'src/composables/usePricing.js'
 import { sessions } from 'src/mocks/sessions.js'
 import ReviewSection from 'src/components/ReviewSection.vue'
 import ReviewRow from 'src/components/ReviewRow.vue'
+import { formatDateTime } from 'src/utils/datetime.js'
 
 const props = defineProps({
   stepHasErrors: { type: Object, required: true },
@@ -51,17 +52,7 @@ const selectedSessions = computed(() =>
     .sort((a, b) => new Date(a.date) - new Date(b.date))
 )
 
-function formatDateTime(iso) {
-  const d = new Date(iso)
-  const date = d.toLocaleDateString(locale.value, { month: 'short', day: 'numeric', timeZone: 'UTC' })
-  const time = d.toLocaleTimeString(locale.value, { hour: 'numeric', minute: '2-digit', timeZone: 'UTC' })
-  return `${date}, ${time}`
-}
 
-function categoryLabel(cat) {
-  const map = { workshop: 'Workshop', meal: 'Meal Package', merchandise: 'Merchandise' }
-  return map[cat] ?? cat
-}
 </script>
 
 <template>
@@ -118,7 +109,7 @@ function categoryLabel(cat) {
       <ReviewRow
         v-for="s in selectedSessions"
         :key="s.id"
-        :label="formatDateTime(s.date)"
+        :label="formatDateTime(s.date, locale)"
         :value="s.title"
       />
     </ReviewSection>
@@ -135,7 +126,7 @@ function categoryLabel(cat) {
       <ReviewRow
         v-for="item in addonLineItems"
         :key="item.id"
-        :label="categoryLabel(item.category)"
+        :label="t('addons.categories.' + item.category)"
         :value="`${item.name} (${formatPrice(item.unitPrice)})`"
       />
     </ReviewSection>

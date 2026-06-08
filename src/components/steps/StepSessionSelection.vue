@@ -1,6 +1,7 @@
 <script setup>
 import { ref, computed } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { formatDate } from 'src/utils/datetime.js'
 import { useRegistration } from 'src/composables/useRegistration.js'
 import { useConflicts } from 'src/composables/useConflicts.js'
 import { sessions } from 'src/mocks/sessions.js'
@@ -12,7 +13,7 @@ defineProps({
   showErrors: { type: Boolean, default: false },
 })
 
-const { t } = useI18n()
+const { t, locale } = useI18n()
 
 const state = useRegistration()
 const selectedSessionIdsRef = computed(() => state.selectedSessionIds)
@@ -36,9 +37,7 @@ const sessionsByDay = computed(() => {
 const dateTabs = computed(() =>
   sessionsByDay.value.map(day => ({
     value: day.dateKey,
-    label: new Date(day.dateKey + 'T00:00:00Z').toLocaleDateString('en', {
-      month: 'short', day: 'numeric', timeZone: 'UTC',
-    }),
+    label: formatDate(day.dateKey + 'T00:00:00Z', locale.value),
   }))
 )
 

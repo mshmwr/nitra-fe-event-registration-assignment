@@ -46,7 +46,7 @@ const ticketLabel = computed(() => t(`tickets.${state.ticketType}.label`))
       v-if="vipWorkshopDiscount > 0"
       class="flex justify-between items-center py-2 border-b divider-muted gap-2"
     >
-      <span class="text-sm text-neutral-quiet">Workshop discount (VIP 10%)</span>
+      <span class="text-sm text-neutral-quiet">{{ t('orderSummary.vipNote') }}</span>
       <span class="text-sm font-medium text-success">-{{ formatPrice(vipWorkshopDiscount) }}</span>
     </div>
 

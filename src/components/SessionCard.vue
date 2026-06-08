@@ -2,6 +2,7 @@
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import BaseCard from 'src/components/BaseCard.vue'
+import { formatTime } from 'src/utils/datetime.js'
 
 const props = defineProps({
   session: { type: Object, required: true },
@@ -38,13 +39,6 @@ const TRACK_COLORS = {
   devops: 'bg-accent-muted-rest text-accent',
 }
 
-function formatTime(iso) {
-  return new Date(iso).toLocaleTimeString(locale.value, {
-    hour: 'numeric',
-    minute: '2-digit',
-    timeZone: 'UTC',
-  })
-}
 </script>
 
 <template>
@@ -98,7 +92,7 @@ function formatTime(iso) {
         <p class="m-0 text-subtitle2 text-neutral leading-snug" :class="selected ? '!font-bold' : ''">{{ session.title }}</p>
         <p class="m-0 text-sm text-neutral-muted mt-0.5">{{ session.speaker }}, {{ session.speakerTitle }}</p>
         <p class="m-0 text-sm text-neutral-quiet mt-1">
-          {{ formatTime(session.date) }} – {{ formatTime(session.endDate) }}
+          {{ formatTime(session.date, locale) }} – {{ formatTime(session.endDate, locale) }}
         </p>
       </div>
 
@@ -111,7 +105,7 @@ function formatTime(iso) {
           />
         </div>
         <p class="m-0 text-xs" :class="spotsClass">
-          <template v-if="isFull">Sold Out</template>
+          <template v-if="isFull">{{ t('sessions.full') }}</template>
           <template v-else>{{ t('sessions.spotsLeft', remaining) }}</template>
         </p>
       </div>

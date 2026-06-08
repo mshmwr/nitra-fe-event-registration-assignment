@@ -4,6 +4,7 @@ import { useI18n } from 'vue-i18n'
 import BaseCard from 'src/components/BaseCard.vue'
 import QuantityPicker from 'src/components/QuantityPicker.vue'
 import { workshopUnitPrice, formatPrice } from 'src/composables/usePricing.js'
+import { formatTimeRange } from 'src/utils/datetime.js'
 
 const props = defineProps({
   addon: { type: Object, required: true },
@@ -30,13 +31,6 @@ const remaining = computed(() => {
 
 const effectivePrice = computed(() => workshopUnitPrice(props.addon, props.isVip))
 const hasVipDiscount = computed(() => props.isVip && props.addon.category === 'workshop')
-
-function formatTimeRange(start, end) {
-  const opts = { hour: 'numeric', minute: '2-digit', timeZone: 'UTC' }
-  const dateOpts = { month: 'short', day: 'numeric', timeZone: 'UTC' }
-  const loc = locale.value
-  return `${new Date(start).toLocaleDateString(loc, dateOpts)}, ${new Date(start).toLocaleTimeString(loc, opts)} – ${new Date(end).toLocaleTimeString(loc, opts)}`
-}
 
 // Workshop / Meal: full-card click toggles selection
 function toggleCard() {
@@ -97,10 +91,10 @@ function updateSize(size) {
     <div v-if="addon.category === 'workshop'" class="mt-1 flex flex-wrap items-center gap-3 text-xs text-neutral-quiet">
       <span class="flex items-center gap-1">
         <span class="material-icons text-sm">schedule</span>
-        {{ formatTimeRange(addon.date, addon.endDate) }}
+        {{ formatTimeRange(addon.date, addon.endDate, locale) }}
       </span>
       <span v-if="remaining !== null" :class="remaining <= 5 && !isFull ? 'text-warning' : ''">
-        {{ isFull ? 'Sold Out' : t('addons.spotsLeft', remaining) }}
+        {{ isFull ? t('addons.full') : t('addons.spotsLeft', remaining) }}
       </span>
       <span v-if="conflictsWithSession" class="flex items-center gap-1 text-danger">
         <span class="material-icons text-sm">warning</span>
@@ -140,7 +134,7 @@ function updateSize(size) {
       <!-- Added to order confirmation -->
       <p v-if="isSelected" class="mt-2 mb-0 text-xs text-success flex items-center gap-1 font-medium">
         <span class="material-icons text-sm">check_circle</span>
-        Added to order
+        {{ t('addons.addedToOrder') }}
       </p>
     </template>
   </BaseCard>
