@@ -129,7 +129,6 @@ watch(() => state.currentStep, (step) => {
           <q-btn
             v-if="currentStep < 4"
             :label="nextLabel"
-            :disable="currentStep === 2 && !!step2Errors.conflicts"
             no-caps
             unelevated
             class="cta-btn"

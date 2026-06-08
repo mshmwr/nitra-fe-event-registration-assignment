@@ -1,7 +1,7 @@
 <script setup>
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { TICKET_PRICES } from 'src/composables/usePricing.js'
+import { TICKET_PRICES, formatPrice } from 'src/composables/usePricing.js'
 import BaseCard from 'src/components/BaseCard.vue'
 
 const props = defineProps({
@@ -35,7 +35,7 @@ const perks = computed(() => tm(`tickets.${props.type}.perks`))
     <!-- name + price -->
     <div class="flex items-center justify-between">
       <span class="text-subtitle1 font-semibold text-neutral">{{ label }}</span>
-      <span class="text-subtitle1 font-semibold text-neutral">${{ price }}</span>
+      <span class="text-subtitle1 font-semibold text-neutral">{{ formatPrice(price) }}</span>
     </div>
 
     <!-- description -->
