@@ -101,9 +101,7 @@ This project was developed with Claude Code (Claude Sonnet 4.6) as the primary A
 
 ## Challenges Encountered
 
-**UnoCSS + Quasar in a Vite worktree:** The worktree didn't have `node_modules` (git worktrees don't copy them). Solved by symlinking the main repo's `node_modules` into the worktree.
-
-**Headless screenshot font loading:** Material Icons font doesn't load in headless Chromium during CI screenshots, so icon ligatures render as text ("check", "arrow_back"). This is a test environment artifact — the font loads normally in a real browser.
+**Border colors require inline styles:** Not all semantic border tokens are exposed as UnoCSS shortcuts. Tokens like `--border-info-opacity` and `--border-neutral-muted` are generated as CSS variables but have no corresponding utility class, so applying them via `:class` doesn't work. The solution was to use `:style="{ borderColor: 'var(--token-name)' }"` for those cases, while keeping color and background tokens in UnoCSS classes where shortcuts exist. This mixing of approaches is intentional — not a gap in the token system, but a reflection of which token tiers the shortcut layer exposes.
 
 ---
 
