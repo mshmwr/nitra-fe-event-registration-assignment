@@ -101,7 +101,7 @@ This project was developed with Claude Code (Claude Sonnet 4.6) as the primary A
 
 ## Challenges Encountered
 
-**Design token mapping without full Figma MCP access:** The Figma MCP server has a limited read quota, which ran out partway through the assignment. Without direct access to component specs, identifying the exact semantic tokens for colors, borders, and spacing from visual inspection alone was error-prone — for example, distinguishing `border-neutral-muted` from `border-neutral-quiet`, or knowing whether a background should be `bg-surface-l0` or `bg-surface-l1`. The workaround was to cross-reference the token table in the README, read the token definitions in `src/unocss/semantic.js` directly, and validate visually in the browser. This slowed down the pixel-matching work but reinforced a deeper understanding of the token system itself.
+**Figma MCP quota exhausted mid-way:** The Figma MCP server's read quota ran out partway through the assignment. Without direct access to component specs, exact token values for colors, borders, and spacing had to be determined manually by cross-referencing the README token table and `src/unocss/semantic.js`. This was time-consuming.
 
 ---
 
