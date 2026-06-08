@@ -113,7 +113,7 @@ Both spec "nice to have" items were completed:
 
 1. **i18n support** — `vue-i18n` wired in via boot file; English + Traditional Chinese, locale switcher in the header, choice persisted to `localStorage`, dates localized via the active locale. See *Additional Dependencies → i18n architecture* above.
 
-2. **Responsive design** — stepper compresses on mobile (only the active step shows its label; inactive steps collapse to numbered circles), pricing/summary rows guard against overflow with `min-w-0` + `whitespace-nowrap`, ticket cards stack single-column and the add-ons summary stacks below the list under the `lg` breakpoint.
+2. **Responsive design** — all four steps always show their label in the stepper nav; pricing/summary rows guard against overflow with `min-w-0` + `whitespace-nowrap`, ticket cards stack single-column and the add-ons summary stacks below the list under the `lg` breakpoint.
 
 ## What I Would Improve Given More Time
 
