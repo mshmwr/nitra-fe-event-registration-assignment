@@ -109,7 +109,7 @@ This project was developed with Claude Code (Claude Sonnet 4.6) as the primary A
 
 Both spec "nice to have" items were completed:
 
-1. **i18n support** — `vue-i18n` wired in via boot file; English + Traditional Chinese, locale switcher in the header, choice persisted to `localStorage`, dates localized via the active locale. See *Additional Dependencies → i18n architecture* above.
+1. **i18n support** — `vue-i18n` wired in via boot file; English + Traditional Chinese, locale switcher in the header, choice persisted to `localStorage`, dates localized via the active locale. See *Additional Dependencies → i18n architecture* above. Note: session and add-on names/descriptions in `src/mocks/` are English-only strings — in a real app these would come from a locale-aware API; the mock layer doesn't support per-locale content.
 
 2. **Responsive design** — all four steps always show their label in the stepper nav; pricing/summary rows guard against overflow with `min-w-0` + `whitespace-nowrap`, ticket cards stack single-column and the add-ons summary stacks below the list under the `lg` breakpoint.
 
