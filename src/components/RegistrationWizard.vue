@@ -57,6 +57,10 @@ function resetWizard() {
   state.submitted = false
   state.currentStep = 1
   state.validationTriggered = false
+  state.ticketType = 'general'
+  Object.assign(state.attendee, { name: '', email: '', phone: '', company: '', jobTitle: '', shippingAddress: '' })
+  state.selectedSessionIds.splice(0)
+  Object.keys(state.selectedAddons).forEach(k => delete state.selectedAddons[k])
 }
 
 watch(() => state.currentStep, (step) => {
