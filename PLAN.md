@@ -28,7 +28,7 @@ Rather than Pinia or Vuex, I used a single `provideRegistration()` called at the
 
 ### Validation: deferred + unified
 
-All field validation runs only after the first submit attempt (`validationTriggered` flag). Before that, no red borders appear — this avoids "screaming at the user before they've had a chance to fill anything." On submit, `useValidation` computes per-step error maps; the `stepHasErrors` computed shows error indicators on the stepper nav. Users can click directly on a flagged step to jump back and fix it.
+All field validation runs only after the first submit attempt, or when the user navigates to the Review step (Step 4) — whichever comes first (`validationTriggered` flag). Before that, no red borders appear — this avoids "screaming at the user before they've had a chance to fill anything." On submit, `useValidation` computes per-step error maps; the `stepHasErrors` computed shows error indicators on the stepper nav. Users can click directly on a flagged step to jump back and fix it.
 
 ### Time conflict detection: `hasTimeOverlap(s1, e1, s2, e2)`
 
@@ -43,15 +43,19 @@ Sessions are allowed to be selected even when conflicting; the error only blocks
 
 Two separate concepts:
 - **Session–session conflicts**: shown with a warning badge on SessionCard; blocks submission
-- **Workshop–session conflicts**: shown on AddonItem; the workshop is marked unavailable (disabled) since there's no recovery path for a paid workshop that overlaps a free session you've already chosen
+- **Workshop–session conflicts**: shown on AddonItem with a conflict warning; already-selected workshops that conflict are flagged and block submission, prompting the user to remove them
 
 ### Pricing: computed, not watched
 
-`usePricing` is a pure composable that derives the order total from the current state via `computed`. No `watch` calls, no manual sync — the total is always correct and updates reactively. VIP discount is applied per-line-item inside the computed, not as a post-processing step.
+`usePricing` is a pure composable that derives the order total from the current state via `computed`. No `watch` calls, no manual sync — the total is always correct and updates reactively. Line-item subtotals use the original price; the VIP discount is computed separately and subtracted at the aggregate level, keeping the discount amount visible as a distinct line in both the order summary and the review page.
 
 ### VIP discount display: single source of truth
 
-`workshopUnitPrice(addon, isVip)` is a named export from `usePricing.js` that returns the effective unit price for an addon. `AddonItem` imports this function directly so the price shown on the card is always computed by the same logic as the order total — no risk of the card showing `$149` while the pricing summary calculates `$134.10`. When `isVip` is true and the addon is a workshop, `AddonItem` also renders the original price struck through alongside a "VIP -10%" badge.
+`workshopUnitPrice(addon, isVip)` is a named export from `usePricing.js` that returns the effective unit price for an addon. `AddonItem` imports this function directly so the discounted price shown on the card matches exactly what `usePricing` uses — no risk of the card showing `$134.10` while the composable calculates a different figure. The two-layer display is intentional: the Add-ons section shows the discounted unit price so VIP users immediately see their savings per item, while the Pricing Summary shows the original subtotal with a separate discount line, keeping the math transparent.
+
+### Success screen: mock confirmation number + full state reset
+
+On submit, a random confirmation number (`TC2028-XXXXX`) is generated client-side — no backend in this assignment, so the number is purely for UI completeness. "Back to Home" calls `resetWizard()`, which clears all state fields (attendee info, ticket type, selected sessions, add-ons, validation flag) so the wizard restarts clean without a page reload.
 
 ### Step navigation UX: scroll to top
 
