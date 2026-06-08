@@ -82,7 +82,7 @@ function handleAddonUpdate(id, selection) {
             <span class="material-icons text-base text-info">info</span>
             <span class="font-semibold text-neutral">{{ t('addons.shippingTitle') }}</span>
           </div>
-          <p class="text-neutral-muted">{{ t('addons.shippingBanner') }}</p>
+          <p class="m-0 text-neutral-muted">{{ t('addons.shippingBanner') }}</p>
         </div>
 
         <TabSwitcher v-model="activeCategory" :tabs="categoryTabs" />
