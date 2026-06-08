@@ -115,10 +115,8 @@ Both spec "nice to have" items were completed:
 
 ## What I Would Improve Given More Time
 
-1. **Mobile OrderSummary as a collapsible drawer** — it currently stacks below the add-ons list under `lg`; a sticky bottom-sheet would keep the running total visible while scrolling a long add-on list.
+1. **Persist state to localStorage** — A `useRegistration` enhancement: watch the state and debounce-save to `localStorage` under a session key. On page reload, hydrate from it. Prevents data loss on accidental refresh.
 
-2. **Persist state to localStorage** — A `useRegistration` enhancement: watch the state and debounce-save to `localStorage` under a session key. On page reload, hydrate from it. Prevents data loss on accidental refresh.
+2. **Animated step counter** — The connector lines between steps could fill in with a green animation as steps complete, giving a stronger "progress" feel.
 
-3. **Animated step counter** — The connector lines between steps could fill in with a green animation as steps complete, giving a stronger "progress" feel.
-
-4. **Keyboard navigation audit** — The custom ticket cards and session cards use `role="radio"` / `role="checkbox"` with `keydown.enter.space` handlers, but a full ARIA review (focus management across step transitions, focus trap review) would be needed for production.
+3. **Keyboard navigation audit** — The custom ticket cards and session cards use `role="radio"` / `role="checkbox"` with `keydown.enter.space` handlers, but a full ARIA review (focus management across step transitions, focus trap review) would be needed for production.
