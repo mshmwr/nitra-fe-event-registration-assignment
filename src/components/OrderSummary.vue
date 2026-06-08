@@ -29,7 +29,7 @@ const ticketLabel = computed(() => t(`tickets.${state.ticketType}.label`))
       :key="item.id"
       class="flex justify-between items-center py-2 border-b divider-muted gap-2"
     >
-      <p class="text-sm text-neutral truncate flex-1 min-w-0">{{ item.name }} × {{ item.quantity }}</p>
+      <p class="m-0 text-sm text-neutral truncate flex-1 min-w-0">{{ item.name }} × {{ item.quantity }}</p>
       <span class="text-sm font-medium text-neutral flex-shrink-0">{{ formatPrice(item.subtotal) }}</span>
     </div>
 
