@@ -13,8 +13,8 @@ The spec's four evaluation dimensions (Vue Patterns, Design Fidelity, Code Quali
 
 | Criterion | Implementation |
 |-----------|----------------|
-| Vue Patterns | `provide/inject` for cross-step state; `computed` for all derived values; `defineModel`-style reactive binding via `v-model` on state fields |
-| Design Fidelity | Semantic CSS tokens (`text-brand`, `bg-brand-muted-rest`, etc.) throughout; no hardcoded hex |
+| Vue Patterns | `provide/inject` for cross-step state; `computed` for all derived values; `defineModel()` macro (Vue 3.4+) for all two-way input bindings (`FormField`, `QuantityPicker`, `TabSwitcher`) |
+| Design Fidelity | Semantic CSS tokens throughout; zero hardcoded hex in `.vue` files — verified by grep; interactive states (hover/active) on CTA button use corresponding token tiers (`--bg-accent-emphasis-hover/active`) |
 | Code Quality | JSDoc on all non-obvious functions; one composable per concern; `src/components/steps/` separate from shared components |
 | JS Logic | Proper half-open interval overlap check for conflicts; floating-point-safe pricing with `Math.round(...*100)/100` |
 
@@ -48,6 +48,14 @@ Two separate concepts:
 ### Pricing: computed, not watched
 
 `usePricing` is a pure composable that derives the order total from the current state via `computed`. No `watch` calls, no manual sync — the total is always correct and updates reactively. VIP discount is applied per-line-item inside the computed, not as a post-processing step.
+
+### VIP discount display: single source of truth
+
+`workshopUnitPrice(addon, isVip)` is a named export from `usePricing.js` that returns the effective unit price for an addon. `AddonItem` imports this function directly so the price shown on the card is always computed by the same logic as the order total — no risk of the card showing `$149` while the pricing summary calculates `$134.10`. When `isVip` is true and the addon is a workshop, `AddonItem` also renders the original price struck through alongside a "VIP -10%" badge.
+
+### Step navigation UX: scroll to top
+
+A single `watch` on `state.currentStep` calls `window.scrollTo({ top: 0, behavior: 'smooth' })` on every step change. This covers all navigation paths (Next, Back, StepperNav click, Edit link from Review) without duplicating scroll logic in each handler.
 
 ---
 
