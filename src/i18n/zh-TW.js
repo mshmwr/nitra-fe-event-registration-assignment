@@ -89,6 +89,8 @@ export default {
     selectSize: '選擇尺寸',
     removeAria: '移除 {name}',
     selectAria: '選擇 {name}',
+    addedToOrder: '已加入訂單',
+    shippingTitle: '寄送資訊',
   },
   review: {
     title: '確認你的報名',
