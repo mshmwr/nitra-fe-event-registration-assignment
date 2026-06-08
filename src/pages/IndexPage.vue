@@ -33,7 +33,7 @@ function onLocaleChange(value) {
 <template>
   <q-layout view="hHh lpR fFf">
     <q-header class="bg-surface-l0" style="border-bottom: 1px solid var(--divider-default);">
-      <q-toolbar class="max-w-6xl mx-auto px-[120px] py-3 flex items-center justify-between gap-3">
+      <q-toolbar class="max-w-6xl mx-auto px-4 md:px-8 lg:px-[120px] py-3 flex items-center justify-between gap-3">
         <div class="flex items-center gap-3 min-w-0">
           <div class="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 overflow-hidden" style="background-color: var(--bg-brand-emphasis-rest)">
             <span class="text-white font-bold text-lg leading-none">N</span>
@@ -61,7 +61,7 @@ function onLocaleChange(value) {
       <q-page class="bg-surface-l0">
         <!-- Full-width stepper bar -->
         <div v-if="!state.submitted" style="border-bottom: 1px solid var(--divider-default);">
-          <div class="max-w-6xl mx-auto px-[120px] py-4">
+          <div class="max-w-6xl mx-auto px-4 md:px-8 lg:px-[120px] py-4">
             <StepperNav
               :current-step="currentStep"
               :show-errors="showErrors"
@@ -72,7 +72,7 @@ function onLocaleChange(value) {
         </div>
 
         <!-- Main content -->
-        <div class="max-w-6xl mx-auto px-[120px] py-8">
+        <div class="max-w-6xl mx-auto px-4 md:px-8 lg:px-[120px] py-8">
           <RegistrationWizard />
         </div>
       </q-page>
