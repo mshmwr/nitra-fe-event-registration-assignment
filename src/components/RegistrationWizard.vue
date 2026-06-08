@@ -49,7 +49,7 @@ function back() {
 function submit() {
   state.validationTriggered = true
   if (!isValid.value) return
-  confirmationNumber.value = 'TC2028-' + String(Math.floor(Math.random() * 90000) + 10000)
+  confirmationNumber.value = 'TC2028-' + String(Date.now() % 100000).padStart(5, '0')
   state.submitted = true
 }
 

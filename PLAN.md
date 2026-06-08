@@ -55,7 +55,7 @@ Two separate concepts:
 
 ### Success screen: mock confirmation number + full state reset
 
-On submit, a random confirmation number (`TC2028-XXXXX`) is generated client-side — no backend in this assignment, so the number is purely for UI completeness. "Back to Home" calls `resetWizard()`, which clears all state fields (attendee info, ticket type, selected sessions, add-ons, validation flag) so the wizard restarts clean without a page reload.
+On submit, a confirmation number (`TC2028-XXXXX`) is generated client-side from the current timestamp (`Date.now() % 100000`, zero-padded to 5 digits) — no backend in this assignment, so the number is purely for UI completeness, but using the timestamp makes it deterministic and unique per submission. "Back to Home" calls `resetWizard()`, which clears all state fields (attendee info, ticket type, selected sessions, add-ons, validation flag) so the wizard restarts clean without a page reload.
 
 ### Step navigation UX: scroll to top
 
