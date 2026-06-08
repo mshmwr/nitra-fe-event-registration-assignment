@@ -101,7 +101,7 @@ This project was developed with Claude Code (Claude Sonnet 4.6) as the primary A
 
 ## Challenges Encountered
 
-**Border colors require inline styles:** Not all semantic border tokens are exposed as UnoCSS shortcuts. Tokens like `--border-info-opacity` and `--border-neutral-muted` are generated as CSS variables but have no corresponding utility class, so applying them via `:class` doesn't work. The solution was to use `:style="{ borderColor: 'var(--token-name)' }"` for those cases, while keeping color and background tokens in UnoCSS classes where shortcuts exist. This mixing of approaches is intentional — not a gap in the token system, but a reflection of which token tiers the shortcut layer exposes.
+**Vue `provide`/`inject` scope constraint:** `inject()` only receives values from ancestor components — it cannot receive from `provide()` called in the same component's `setup()`. This surfaced when `usePricingInjected()` was called inside `RegistrationWizard.vue` alongside `providePricing()`, producing a white screen with a runtime injection error. The fix was to use the return value from `providePricing()` directly for the wizard shell's own needs, while child components like `OrderSummary` continue to call `usePricingInjected()` correctly — they sit below the provider in the tree and receive the values as intended.
 
 ---
 
