@@ -101,7 +101,7 @@ This project was developed with Claude Code (Claude Sonnet 4.6) as the primary A
 
 ## Challenges Encountered
 
-**Vue `provide`/`inject` scope constraint:** `inject()` only receives values from ancestor components — it cannot receive from `provide()` called in the same component's `setup()`. This surfaced when `usePricingInjected()` was called inside `RegistrationWizard.vue` alongside `providePricing()`, producing a white screen with a runtime injection error. The fix was to use the return value from `providePricing()` directly for the wizard shell's own needs, while child components like `OrderSummary` continue to call `usePricingInjected()` correctly — they sit below the provider in the tree and receive the values as intended.
+**Design token mapping without full Figma MCP access:** The Figma MCP server has a limited read quota, which ran out partway through the assignment. Without direct access to component specs, identifying the exact semantic tokens for colors, borders, and spacing from visual inspection alone was error-prone — for example, distinguishing `border-neutral-muted` from `border-neutral-quiet`, or knowing whether a background should be `bg-surface-l0` or `bg-surface-l1`. The workaround was to cross-reference the token table in the README, read the token definitions in `src/unocss/semantic.js` directly, and validate visually in the browser. This slowed down the pixel-matching work but reinforced a deeper understanding of the token system itself.
 
 ---
 
