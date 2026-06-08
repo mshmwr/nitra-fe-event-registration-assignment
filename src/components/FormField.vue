@@ -13,7 +13,7 @@ defineProps({
 
 <template>
   <div class="flex flex-col gap-1.5">
-    <label class="text-xs font-medium" :class="required ? 'text-danger' : 'text-neutral-muted'">{{ label }}</label>
+    <label class="text-xs font-medium" :class="error ? 'text-danger' : 'text-neutral-muted'">{{ label }}</label>
     <input
       v-model="model"
       :type="type"
