@@ -4,7 +4,7 @@ import { useI18n } from 'vue-i18n'
 import { useRegistration } from 'src/composables/useRegistration.js'
 import { useConflicts } from 'src/composables/useConflicts.js'
 import { useValidation } from 'src/composables/useValidation.js'
-import { providePricing, usePricingInjected, formatPrice } from 'src/composables/usePricing.js'
+import { providePricing, formatPrice } from 'src/composables/usePricing.js'
 import { sessions } from 'src/mocks/sessions.js'
 import { formatDateTime } from 'src/utils/datetime.js'
 import StepAttendeeInfo from 'src/components/steps/StepAttendeeInfo.vue'
@@ -25,8 +25,7 @@ const { conflictingSessionIds, conflictingWorkshopIds } = useConflicts(selectedS
 const { step1Errors, step2Errors, step3Errors, stepHasErrors, isValid, hasMerchandise } = useValidation(state, conflictingSessionIds, conflictingWorkshopIds)
 
 const ticketTypeRef = computed(() => state.ticketType)
-providePricing(ticketTypeRef, selectedAddonsRef)
-const { ticketPrice, addonLineItems, total } = usePricingInjected()
+const { ticketPrice, addonLineItems, total } = providePricing(ticketTypeRef, selectedAddonsRef)
 
 const ticketLabel = computed(() => t(`tickets.${state.ticketType}.label`))
 const selectedSessions = computed(() =>
