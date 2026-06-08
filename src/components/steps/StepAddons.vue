@@ -80,7 +80,7 @@ function handleAddonUpdate(id, selection) {
         >
           <div class="flex items-center gap-2 mb-1">
             <span class="material-icons text-base text-info">info</span>
-            <span class="font-semibold text-neutral">Shipping Information</span>
+            <span class="font-semibold text-neutral">{{ t('addons.shippingTitle') }}</span>
           </div>
           <p class="text-neutral-muted">{{ t('addons.shippingBanner') }}</p>
         </div>
