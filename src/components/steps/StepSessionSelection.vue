@@ -67,9 +67,9 @@ function toggleSession(id) {
 
     <div
       v-if="errors.conflicts"
-      class="flex items-start gap-3 p-3 rounded-lg bg-danger-muted-rest border border-danger-muted text-danger text-sm"
+      class="flex items-center gap-3 p-3 rounded-lg bg-danger-muted-rest border border-danger-muted text-danger text-sm"
     >
-      <span class="material-icons text-base flex-shrink-0 mt-0.5">error_outline</span>
+      <span class="material-icons text-base flex-shrink-0">error_outline</span>
       {{ errors.conflicts }}
     </div>
 

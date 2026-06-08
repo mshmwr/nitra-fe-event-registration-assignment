@@ -66,9 +66,9 @@ function handleAddonUpdate(id, selection) {
         <!-- Workshop conflict validation error (shown after submit attempt) -->
         <div
           v-if="showErrors && step3Errors.workshopConflicts"
-          class="flex items-start gap-3 p-3 rounded-lg bg-danger-muted-rest border border-danger-muted text-danger text-sm"
+          class="flex items-center gap-3 p-3 rounded-lg bg-danger-muted-rest border border-danger-muted text-danger text-sm"
         >
-          <span class="material-icons text-base flex-shrink-0 mt-0.5">warning</span>
+          <span class="material-icons text-base flex-shrink-0">warning</span>
           {{ step3Errors.workshopConflicts }}
         </div>
 
