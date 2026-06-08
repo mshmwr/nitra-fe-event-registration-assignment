@@ -22,7 +22,9 @@ export default {
   },
   success: {
     title: '報名完成！',
+    confirmationPrefix: '確認編號 #',
     message: '{name}，感謝你！你報名的 {event} 已送出，確認信將寄至 {email}。',
+    backToHome: '返回首頁',
   },
   tickets: {
     sectionTitle: '選擇票種',

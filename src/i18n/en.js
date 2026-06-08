@@ -21,9 +21,10 @@ export default {
     nextReview: 'Next: Review',
   },
   success: {
-    title: "You're registered!",
-    // {name}, {event} and {email} are interpolated at runtime.
+    title: 'Registration Complete!',
+    confirmationPrefix: 'Confirmation #',
     message: 'Thanks, {name}! Your registration for {event} has been submitted. A confirmation will be sent to {email}.',
+    backToHome: 'Back to Home',
   },
   tickets: {
     sectionTitle: 'Select Ticket Type',
