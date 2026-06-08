@@ -90,6 +90,8 @@ export default {
     selectSize: 'Select size',
     removeAria: 'Remove {name}',
     selectAria: 'Select {name}',
+    addedToOrder: 'Added to order',
+    shippingTitle: 'Shipping Information',
   },
   review: {
     title: 'Review Your Registration',
