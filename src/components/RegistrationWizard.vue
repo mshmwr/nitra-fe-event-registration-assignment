@@ -4,14 +4,18 @@ import { useI18n } from 'vue-i18n'
 import { useRegistration } from 'src/composables/useRegistration.js'
 import { useConflicts } from 'src/composables/useConflicts.js'
 import { useValidation } from 'src/composables/useValidation.js'
-import { providePricing } from 'src/composables/usePricing.js'
+import { providePricing, usePricingInjected, formatPrice } from 'src/composables/usePricing.js'
+import { sessions } from 'src/mocks/sessions.js'
+import { formatDateTime } from 'src/utils/datetime.js'
 import StepAttendeeInfo from 'src/components/steps/StepAttendeeInfo.vue'
 import StepSessionSelection from 'src/components/steps/StepSessionSelection.vue'
 import StepAddons from 'src/components/steps/StepAddons.vue'
 import StepReviewSubmit from 'src/components/steps/StepReviewSubmit.vue'
+import ReviewSection from 'src/components/ReviewSection.vue'
+import ReviewRow from 'src/components/ReviewRow.vue'
 import Divider from 'src/components/Divider.vue'
 
-const { t } = useI18n()
+const { t, locale } = useI18n()
 
 const state = useRegistration()
 
@@ -22,6 +26,13 @@ const { step1Errors, step2Errors, step3Errors, stepHasErrors, isValid, hasMercha
 
 const ticketTypeRef = computed(() => state.ticketType)
 providePricing(ticketTypeRef, selectedAddonsRef)
+const { ticketPrice, addonLineItems, total } = usePricingInjected()
+
+const ticketLabel = computed(() => t(`tickets.${state.ticketType}.label`))
+const selectedSessions = computed(() =>
+  sessions.filter(s => state.selectedSessionIds.includes(s.id))
+    .sort((a, b) => new Date(a.date) - new Date(b.date))
+)
 
 const currentStep = computed(() => state.currentStep)
 
@@ -62,16 +73,63 @@ watch(() => state.currentStep, (step) => {
 
     <!-- Success screen -->
     <Transition name="fade" mode="out-in">
-      <div v-if="state.submitted" class="flex flex-col items-center justify-center py-16 text-center space-y-4">
-        <div class="w-16 h-16 rounded-full bg-success-muted-rest flex items-center justify-center">
-          <span class="material-icons text-success text-4xl">check_circle</span>
+      <div v-if="state.submitted" class="py-12 space-y-8">
+        <!-- Confirmation header -->
+        <div class="flex flex-col items-center text-center space-y-4">
+          <div class="w-16 h-16 rounded-full bg-success-muted-rest flex items-center justify-center">
+            <span class="material-icons text-success text-4xl">check_circle</span>
+          </div>
+          <h2 class="text-h3 text-neutral">{{ t('success.title') }}</h2>
+          <i18n-t keypath="success.message" tag="p" class="text-neutral-muted max-w-md" scope="global">
+            <template #name><strong>{{ state.attendee.name }}</strong></template>
+            <template #event><strong>{{ t('app.title') }}</strong></template>
+            <template #email><strong>{{ state.attendee.email }}</strong></template>
+          </i18n-t>
         </div>
-        <h2 class="text-h3 text-neutral">{{ t('success.title') }}</h2>
-        <i18n-t keypath="success.message" tag="p" class="text-neutral-muted max-w-md" scope="global">
-          <template #name><strong>{{ state.attendee.name }}</strong></template>
-          <template #event><strong>{{ t('app.title') }}</strong></template>
-          <template #email><strong>{{ state.attendee.email }}</strong></template>
-        </i18n-t>
+
+        <!-- Order summary -->
+        <div class="max-w-xl mx-auto space-y-4">
+          <ReviewSection :title="t('review.sectionAttendee')" :step="0" :has-error="false" :show-errors="false">
+            <ReviewRow :label="t('review.fieldName')" :value="state.attendee.name" />
+            <ReviewRow :label="t('review.fieldEmail')" :value="state.attendee.email" />
+            <ReviewRow :label="t('review.fieldTicket')" :value="`${ticketLabel} (${formatPrice(ticketPrice)})`" />
+          </ReviewSection>
+
+          <ReviewSection
+            v-if="selectedSessions.length > 0"
+            :title="t('review.sectionSessions')"
+            :step="0"
+            :has-error="false"
+            :show-errors="false"
+          >
+            <ReviewRow
+              v-for="s in selectedSessions"
+              :key="s.id"
+              :label="formatDateTime(s.date, locale)"
+              :value="s.title"
+            />
+          </ReviewSection>
+
+          <ReviewSection
+            v-if="addonLineItems.length > 0"
+            :title="t('review.sectionAddons')"
+            :step="0"
+            :has-error="false"
+            :show-errors="false"
+          >
+            <ReviewRow
+              v-for="item in addonLineItems"
+              :key="item.id"
+              :label="t('addons.categories.' + item.category)"
+              :value="`${item.name} (${formatPrice(item.unitPrice)})`"
+            />
+          </ReviewSection>
+
+          <div class="flex justify-between text-sm font-semibold text-neutral border-t border-neutral-muted pt-3">
+            <span>{{ t('review.total') }}</span>
+            <span>{{ formatPrice(total) }}</span>
+          </div>
+        </div>
       </div>
 
       <!-- Wizard -->
@@ -129,7 +187,6 @@ watch(() => state.currentStep, (step) => {
           <q-btn
             v-if="currentStep < 4"
             :label="nextLabel"
-            :disable="currentStep === 2 && !!step2Errors.conflicts"
             no-caps
             unelevated
             class="cta-btn"
