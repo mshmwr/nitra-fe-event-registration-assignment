@@ -44,30 +44,32 @@ export function usePricing(ticketTypeRef, selectedAddonsRef) {
    * Line items for all selected addons with VIP discount applied to workshops.
    * @type {import('vue').ComputedRef<Array<{ id: string, name: string, category: string, unitPrice: number, quantity: number, subtotal: number, size: string|null }>>}
    */
-  const addonLineItems = computed(() =>
-    Object.entries(selectedAddonsRef.value).flatMap(([id, selection]) => {
+  const addonLineItems = computed(() => {
+    const isVip = ticketTypeRef.value === 'vip'
+    return Object.entries(selectedAddonsRef.value).flatMap(([id, selection]) => {
       const addon = addons.find(a => a.id === id)
       if (!addon) return []
       const quantity = selection.quantity ?? 1
+      const unitPrice = workshopUnitPrice(addon, isVip)
       return [{
         id,
         name: addon.name,
         category: addon.category,
-        unitPrice: addon.price,
+        unitPrice,
         quantity,
         subtotal: Math.round(addon.price * quantity * 100) / 100,
         size: selection.size ?? null,
       }]
     })
-  )
+  })
 
   const vipWorkshopDiscount = computed(() => {
-    if (ticketTypeRef.value !== 'vip') return 0
+    const isVip = ticketTypeRef.value === 'vip'
     return Math.round(
       Object.entries(selectedAddonsRef.value).reduce((sum, [id, sel]) => {
         const addon = addons.find(a => a.id === id)
         if (!addon || addon.category !== 'workshop') return sum
-        return sum + addon.price * (sel.quantity ?? 1) * 0.1
+        return sum + (addon.price - workshopUnitPrice(addon, isVip)) * (sel.quantity ?? 1)
       }, 0) * 100
     ) / 100
   })
