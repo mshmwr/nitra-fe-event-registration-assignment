@@ -60,14 +60,11 @@ function handleClick(step) {
         </div>
         <span
           class="text-sm font-medium transition-colors truncate"
-          :class="[
-            step.number !== currentStep ? 'hidden md:inline' : '',
-            {
-              'text-neutral': stepStatus(step.number) === 'active' || stepStatus(step.number) === 'done',
-              'text-danger': stepStatus(step.number) === 'error',
-              'text-neutral-quiet': stepStatus(step.number) === 'pending',
-            }
-          ]"
+          :class="{
+            'text-neutral': stepStatus(step.number) === 'active' || stepStatus(step.number) === 'done',
+            'text-danger': stepStatus(step.number) === 'error',
+            'text-neutral-quiet': stepStatus(step.number) === 'pending',
+          }"
         >
           {{ t(step.labelKey) }}
         </span>
