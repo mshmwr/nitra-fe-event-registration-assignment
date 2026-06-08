@@ -23,7 +23,9 @@ export default {
   success: {
     title: 'Registration Complete!',
     confirmationPrefix: 'Confirmation #',
-    message: 'Thanks, {name}! Your registration for {event} has been submitted. A confirmation will be sent to {email}.',
+    messageGeneral: 'Thank you, {name}! Your registration for TechConf 2028 is confirmed.',
+    messageVip: 'Thank you, {name}! Your VIP registration for TechConf 2028 is confirmed.',
+    messageEmail: 'You will receive a confirmation email at {email}.',
     backToHome: 'Back to Home',
   },
   tickets: {

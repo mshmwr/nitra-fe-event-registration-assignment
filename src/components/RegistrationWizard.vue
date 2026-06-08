@@ -23,6 +23,7 @@ const { step1Errors, step2Errors, step3Errors, stepHasErrors, isValid, hasMercha
 const ticketTypeRef = computed(() => state.ticketType)
 providePricing(ticketTypeRef, selectedAddonsRef)
 
+const isVip = computed(() => state.ticketType === 'vip')
 const currentStep = computed(() => state.currentStep)
 const showErrors = computed(() => state.validationTriggered)
 
@@ -48,7 +49,7 @@ function back() {
 function submit() {
   state.validationTriggered = true
   if (!isValid.value) return
-  confirmationNumber.value = 'TC2025-' + String(Math.floor(Math.random() * 90000) + 10000)
+  confirmationNumber.value = 'TC2028-' + String(Math.floor(Math.random() * 90000) + 10000)
   state.submitted = true
 }
 
@@ -79,10 +80,11 @@ watch(() => state.currentStep, (step) => {
         </div>
         <h2 class="text-h3 font-bold text-success">{{ t('success.title') }}</h2>
         <p class="m-0 text-subtitle2 text-neutral-muted">{{ t('success.confirmationPrefix') }}{{ confirmationNumber }}</p>
-        <i18n-t keypath="success.message" tag="p" class="m-0 text-neutral-muted max-w-md" scope="global">
+        <i18n-t :keypath="isVip ? 'success.messageVip' : 'success.messageGeneral'" tag="p" class="m-0 text-sm text-neutral-muted max-w-md" scope="global">
           <template #name><strong>{{ state.attendee.name }}</strong></template>
-          <template #event><strong>{{ t('app.title') }}</strong></template>
-          <template #email><strong>{{ state.attendee.email }}</strong></template>
+        </i18n-t>
+        <i18n-t keypath="success.messageEmail" tag="p" class="m-0 text-sm text-neutral-muted max-w-md" scope="global">
+          <template #email>{{ state.attendee.email }}</template>
         </i18n-t>
         <q-btn
           :label="t('success.backToHome')"
