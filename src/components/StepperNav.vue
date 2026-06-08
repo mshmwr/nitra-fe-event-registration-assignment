@@ -38,7 +38,7 @@ function handleClick(step) {
     <template v-for="(step, idx) in STEPS" :key="step.number">
       <button
         type="button"
-        class="flex items-center gap-2 py-2 px-2 tablet:px-3 rounded-lg transition-colors group min-w-0 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 border-0 bg-transparent cursor-default"
+        class="flex items-center gap-2 py-2 px-2 md:px-3 rounded-lg transition-colors group min-w-0 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 border-0 bg-transparent cursor-default"
         :class="{
           'cursor-pointer': step.number < currentStep || stepStatus(step.number) === 'done' || stepStatus(step.number) === 'error',
           'cursor-default': step.number > currentStep && stepStatus(step.number) !== 'done' && stepStatus(step.number) !== 'error',
@@ -60,11 +60,14 @@ function handleClick(step) {
         </div>
         <span
           class="text-sm font-medium transition-colors truncate"
-          :class="{
-            'text-neutral': stepStatus(step.number) === 'active' || stepStatus(step.number) === 'done',
-            'text-danger': stepStatus(step.number) === 'error',
-            'text-neutral-quiet': stepStatus(step.number) === 'pending',
-          }"
+          :class="[
+            step.number !== currentStep ? 'hidden md:inline' : '',
+            {
+              'text-neutral': stepStatus(step.number) === 'active' || stepStatus(step.number) === 'done',
+              'text-danger': stepStatus(step.number) === 'error',
+              'text-neutral-quiet': stepStatus(step.number) === 'pending',
+            }
+          ]"
         >
           {{ t(step.labelKey) }}
         </span>
