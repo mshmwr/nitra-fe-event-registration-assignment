@@ -28,7 +28,7 @@ Rather than Pinia or Vuex, I used a single `provideRegistration()` called at the
 
 ### Validation: deferred + unified
 
-All field validation runs only after the first submit attempt (`validationTriggered` flag). Before that, no red borders appear — this avoids "screaming at the user before they've had a chance to fill anything." On submit, `useValidation` computes per-step error maps; the `stepHasErrors` computed shows error indicators on the stepper nav. Users can click directly on a flagged step to jump back and fix it.
+All field validation runs only after the first submit attempt, or when the user navigates to the Review step (Step 4) — whichever comes first (`validationTriggered` flag). Before that, no red borders appear — this avoids "screaming at the user before they've had a chance to fill anything." On submit, `useValidation` computes per-step error maps; the `stepHasErrors` computed shows error indicators on the stepper nav. Users can click directly on a flagged step to jump back and fix it.
 
 ### Time conflict detection: `hasTimeOverlap(s1, e1, s2, e2)`
 
@@ -43,15 +43,19 @@ Sessions are allowed to be selected even when conflicting; the error only blocks
 
 Two separate concepts:
 - **Session–session conflicts**: shown with a warning badge on SessionCard; blocks submission
-- **Workshop–session conflicts**: shown on AddonItem; the workshop is marked unavailable (disabled) since there's no recovery path for a paid workshop that overlaps a free session you've already chosen
+- **Workshop–session conflicts**: shown on AddonItem with a conflict warning; already-selected workshops that conflict are flagged and block submission, prompting the user to remove them
 
 ### Pricing: computed, not watched
 
-`usePricing` is a pure composable that derives the order total from the current state via `computed`. No `watch` calls, no manual sync — the total is always correct and updates reactively. VIP discount is applied per-line-item inside the computed, not as a post-processing step.
+`usePricing` is a pure composable that derives the order total from the current state via `computed`. No `watch` calls, no manual sync — the total is always correct and updates reactively. Line-item subtotals use the original price; the VIP discount is computed separately and subtracted at the aggregate level, keeping the discount amount visible as a distinct line in both the order summary and the review page.
 
 ### VIP discount display: single source of truth
 
-`workshopUnitPrice(addon, isVip)` is a named export from `usePricing.js` that returns the effective unit price for an addon. `AddonItem` imports this function directly so the price shown on the card is always computed by the same logic as the order total — no risk of the card showing `$149` while the pricing summary calculates `$134.10`. When `isVip` is true and the addon is a workshop, `AddonItem` also renders the original price struck through alongside a "VIP -10%" badge.
+`workshopUnitPrice(addon, isVip)` is a named export from `usePricing.js` that returns the effective unit price for an addon. `AddonItem` imports this function directly so the discounted price shown on the card matches exactly what `usePricing` uses — no risk of the card showing `$134.10` while the composable calculates a different figure. The two-layer display is intentional: the Add-ons section shows the discounted unit price so VIP users immediately see their savings per item, while the Pricing Summary shows the original subtotal with a separate discount line, keeping the math transparent.
+
+### Success screen: mock confirmation number + full state reset
+
+On submit, a confirmation number (`TC2028-XXXXX`) is generated client-side from the current timestamp (`Date.now() % 100000`, zero-padded to 5 digits) — no backend in this assignment, so the number is purely for UI completeness, but using the timestamp makes it deterministic and unique per submission. "Back to Home" calls `resetWizard()`, which clears all state fields (attendee info, ticket type, selected sessions, add-ons, validation flag) so the wizard restarts clean without a page reload.
 
 ### Step navigation UX: scroll to top
 
@@ -101,9 +105,7 @@ This project was developed with Claude Code (Claude Sonnet 4.6) as the primary A
 
 ## Challenges Encountered
 
-**UnoCSS + Quasar in a Vite worktree:** The worktree didn't have `node_modules` (git worktrees don't copy them). Solved by symlinking the main repo's `node_modules` into the worktree.
-
-**Headless screenshot font loading:** Material Icons font doesn't load in headless Chromium during CI screenshots, so icon ligatures render as text ("check", "arrow_back"). This is a test environment artifact — the font loads normally in a real browser.
+**Figma MCP quota exhausted mid-way:** The Figma MCP server's read quota ran out partway through the assignment. Without direct access to component specs, exact token values for colors, borders, and spacing had to be determined manually by cross-referencing the README token table and `src/unocss/semantic.js`. This was time-consuming.
 
 ---
 
@@ -111,16 +113,14 @@ This project was developed with Claude Code (Claude Sonnet 4.6) as the primary A
 
 Both spec "nice to have" items were completed:
 
-1. **i18n support** — `vue-i18n` wired in via boot file; English + Traditional Chinese, locale switcher in the header, choice persisted to `localStorage`, dates localized via the active locale. See *Additional Dependencies → i18n architecture* above.
+1. **i18n support** — `vue-i18n` wired in via boot file; English + Traditional Chinese, locale switcher in the header, choice persisted to `localStorage`, dates localized via the active locale. See *Additional Dependencies → i18n architecture* above. Note: session and add-on names/descriptions in `src/mocks/` are English-only strings — in a real app these would come from a locale-aware API; the mock layer doesn't support per-locale content.
 
-2. **Responsive design** — stepper compresses on mobile (only the active step shows its label; inactive steps collapse to numbered circles), pricing/summary rows guard against overflow with `min-w-0` + `whitespace-nowrap`, ticket cards stack single-column and the add-ons summary stacks below the list under the `lg` breakpoint.
+2. **Responsive design** — all four steps always show their label in the stepper nav; pricing/summary rows guard against overflow with `min-w-0` + `whitespace-nowrap`, ticket cards stack single-column and the add-ons summary stacks below the list under the `lg` breakpoint.
 
 ## What I Would Improve Given More Time
 
-1. **Mobile OrderSummary as a collapsible drawer** — it currently stacks below the add-ons list under `lg`; a sticky bottom-sheet would keep the running total visible while scrolling a long add-on list.
+1. **Persist state to localStorage** — A `useRegistration` enhancement: watch the state and debounce-save to `localStorage` under a session key. On page reload, hydrate from it. Prevents data loss on accidental refresh.
 
-2. **Persist state to localStorage** — A `useRegistration` enhancement: watch the state and debounce-save to `localStorage` under a session key. On page reload, hydrate from it. Prevents data loss on accidental refresh.
+2. **Animated step counter** — The connector lines between steps could fill in with a green animation as steps complete, giving a stronger "progress" feel.
 
-3. **Animated step counter** — The connector lines between steps could fill in with a green animation as steps complete, giving a stronger "progress" feel.
-
-4. **Keyboard navigation audit** — The custom ticket cards and session cards use `role="radio"` / `role="checkbox"` with `keydown.enter.space` handlers, but a full ARIA review (focus management across step transitions, focus trap review) would be needed for production.
+3. **Keyboard navigation audit** — The custom ticket cards and session cards use `role="radio"` / `role="checkbox"` with `keydown.enter.space` handlers, but a full ARIA review (focus management across step transitions, focus trap review) would be needed for production.

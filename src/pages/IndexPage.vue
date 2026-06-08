@@ -38,7 +38,7 @@ function onLocaleChange(value) {
           <div class="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 overflow-hidden" style="background-color: var(--bg-brand-emphasis-rest)">
             <span class="text-white font-bold text-lg leading-none">N</span>
           </div>
-          <p class="text-h6 font-bold text-neutral leading-none truncate">{{ t('app.title') }}</p>
+          <p class="m-0 text-h6 font-bold text-neutral leading-none truncate">{{ t('app.title') }}</p>
         </div>
         <q-select
           :model-value="locale"

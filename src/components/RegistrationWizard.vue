@@ -1,21 +1,17 @@
 <script setup>
-import { computed, watch } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRegistration } from 'src/composables/useRegistration.js'
 import { useConflicts } from 'src/composables/useConflicts.js'
 import { useValidation } from 'src/composables/useValidation.js'
-import { providePricing, formatPrice } from 'src/composables/usePricing.js'
-import { sessions } from 'src/mocks/sessions.js'
-import { formatDateTime } from 'src/utils/datetime.js'
+import { providePricing } from 'src/composables/usePricing.js'
 import StepAttendeeInfo from 'src/components/steps/StepAttendeeInfo.vue'
 import StepSessionSelection from 'src/components/steps/StepSessionSelection.vue'
 import StepAddons from 'src/components/steps/StepAddons.vue'
 import StepReviewSubmit from 'src/components/steps/StepReviewSubmit.vue'
-import ReviewSection from 'src/components/ReviewSection.vue'
-import ReviewRow from 'src/components/ReviewRow.vue'
 import Divider from 'src/components/Divider.vue'
 
-const { t, locale } = useI18n()
+const { t } = useI18n()
 
 const state = useRegistration()
 
@@ -25,22 +21,18 @@ const { conflictingSessionIds, conflictingWorkshopIds } = useConflicts(selectedS
 const { step1Errors, step2Errors, step3Errors, stepHasErrors, isValid, hasMerchandise } = useValidation(state, conflictingSessionIds, conflictingWorkshopIds)
 
 const ticketTypeRef = computed(() => state.ticketType)
-const { ticketPrice, addonLineItems, total } = providePricing(ticketTypeRef, selectedAddonsRef)
+providePricing(ticketTypeRef, selectedAddonsRef)
 
-const ticketLabel = computed(() => t(`tickets.${state.ticketType}.label`))
-const selectedSessions = computed(() =>
-  sessions.filter(s => state.selectedSessionIds.includes(s.id))
-    .sort((a, b) => new Date(a.date) - new Date(b.date))
-)
-
+const isVip = computed(() => state.ticketType === 'vip')
 const currentStep = computed(() => state.currentStep)
-
 const showErrors = computed(() => state.validationTriggered)
 
 const nextLabel = computed(() => {
   const labels = { 1: t('nav.nextSessions'), 2: t('nav.nextAddons'), 3: t('nav.nextReview') }
   return labels[currentStep.value] ?? t('nav.continue')
 })
+
+const confirmationNumber = ref('')
 
 function goTo(step) {
   state.currentStep = step
@@ -57,7 +49,18 @@ function back() {
 function submit() {
   state.validationTriggered = true
   if (!isValid.value) return
+  confirmationNumber.value = 'TC2028-' + String(Date.now() % 100000).padStart(5, '0')
   state.submitted = true
+}
+
+function resetWizard() {
+  state.submitted = false
+  state.currentStep = 1
+  state.validationTriggered = false
+  state.ticketType = 'general'
+  Object.assign(state.attendee, { name: '', email: '', phone: '', company: '', jobTitle: '', shippingAddress: '' })
+  state.selectedSessionIds.splice(0)
+  Object.keys(state.selectedAddons).forEach(k => delete state.selectedAddons[k])
 }
 
 watch(() => state.currentStep, (step) => {
@@ -72,63 +75,28 @@ watch(() => state.currentStep, (step) => {
 
     <!-- Success screen -->
     <Transition name="fade" mode="out-in">
-      <div v-if="state.submitted" class="py-12 space-y-8">
-        <!-- Confirmation header -->
-        <div class="flex flex-col items-center text-center space-y-4">
-          <div class="w-16 h-16 rounded-full bg-success-muted-rest flex items-center justify-center">
-            <span class="material-icons text-success text-4xl">check_circle</span>
-          </div>
-          <h2 class="text-h3 text-neutral">{{ t('success.title') }}</h2>
-          <i18n-t keypath="success.message" tag="p" class="text-neutral-muted max-w-md" scope="global">
-            <template #name><strong>{{ state.attendee.name }}</strong></template>
-            <template #event><strong>{{ t('app.title') }}</strong></template>
-            <template #email><strong>{{ state.attendee.email }}</strong></template>
-          </i18n-t>
+      <div v-if="state.submitted" class="py-12 flex flex-col items-center text-center gap-4">
+        <div
+          class="w-16 h-16 rounded-full flex items-center justify-center"
+          style="background-color: var(--bg-success-emphasis-rest)"
+        >
+          <span class="material-icons text-white text-4xl">check</span>
         </div>
-
-        <!-- Order summary -->
-        <div class="max-w-xl mx-auto space-y-4">
-          <ReviewSection :title="t('review.sectionAttendee')" :step="0" :has-error="false" :show-errors="false">
-            <ReviewRow :label="t('review.fieldName')" :value="state.attendee.name" />
-            <ReviewRow :label="t('review.fieldEmail')" :value="state.attendee.email" />
-            <ReviewRow :label="t('review.fieldTicket')" :value="`${ticketLabel} (${formatPrice(ticketPrice)})`" />
-          </ReviewSection>
-
-          <ReviewSection
-            v-if="selectedSessions.length > 0"
-            :title="t('review.sectionSessions')"
-            :step="0"
-            :has-error="false"
-            :show-errors="false"
-          >
-            <ReviewRow
-              v-for="s in selectedSessions"
-              :key="s.id"
-              :label="formatDateTime(s.date, locale)"
-              :value="s.title"
-            />
-          </ReviewSection>
-
-          <ReviewSection
-            v-if="addonLineItems.length > 0"
-            :title="t('review.sectionAddons')"
-            :step="0"
-            :has-error="false"
-            :show-errors="false"
-          >
-            <ReviewRow
-              v-for="item in addonLineItems"
-              :key="item.id"
-              :label="t('addons.categories.' + item.category)"
-              :value="`${item.name} (${formatPrice(item.unitPrice)})`"
-            />
-          </ReviewSection>
-
-          <div class="flex justify-between text-sm font-semibold text-neutral border-t border-neutral-muted pt-3">
-            <span>{{ t('review.total') }}</span>
-            <span>{{ formatPrice(total) }}</span>
-          </div>
-        </div>
+        <h2 class="text-h3 font-bold text-success">{{ t('success.title') }}</h2>
+        <p class="m-0 text-subtitle2 text-neutral-muted">{{ t('success.confirmationPrefix') }}{{ confirmationNumber }}</p>
+        <i18n-t :keypath="isVip ? 'success.messageVip' : 'success.messageGeneral'" tag="p" class="m-0 text-sm text-neutral-muted max-w-md" scope="global">
+          <template #name><strong>{{ state.attendee.name }}</strong></template>
+        </i18n-t>
+        <i18n-t keypath="success.messageEmail" tag="p" class="m-0 text-sm text-neutral-muted max-w-md" scope="global">
+          <template #email>{{ state.attendee.email }}</template>
+        </i18n-t>
+        <q-btn
+          :label="t('success.backToHome')"
+          no-caps
+          unelevated
+          class="cta-btn mt-2"
+          @click="resetWizard"
+        />
       </div>
 
       <!-- Wizard -->

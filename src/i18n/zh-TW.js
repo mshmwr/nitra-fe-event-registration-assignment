@@ -22,7 +22,11 @@ export default {
   },
   success: {
     title: '報名完成！',
-    message: '{name}，感謝你！你報名的 {event} 已送出，確認信將寄至 {email}。',
+    confirmationPrefix: '確認編號 #',
+    messageGeneral: '謝謝，{name}！你的 TechConf 2028 報名已確認。',
+    messageVip: '謝謝，{name}！你的 TechConf 2028 VIP 報名已確認。',
+    messageEmail: '確認信將寄至 {email}。',
+    backToHome: '返回首頁',
   },
   tickets: {
     sectionTitle: '選擇票種',
